@@ -1,181 +1,292 @@
-import MaterialIcon from "@/components/shared/MaterialIcon";
+"use client";
+
+import {
+  Bell,
+  BookOpen,
+  Calendar,
+  CheckCircle2,
+  FileText,
+  Medal,
+  Play,
+  TrendingUp,
+} from "lucide-react";
+import {
+  Area,
+  AreaChart,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+} from "recharts";
+import FadeIn from "@/components/motion/FadeIn";
+import SectionHeader from "@/components/shared/SectionHeader";
+import GradientText from "@/components/shared/GradientText";
+
+const chartData = [
+  { week: "W1", hours: 4 },
+  { week: "W2", hours: 7 },
+  { week: "W3", hours: 5 },
+  { week: "W4", hours: 9 },
+  { week: "W5", hours: 8 },
+  { week: "W6", hours: 12 },
+];
+
+const navItems = [
+  { icon: BookOpen, label: "Courses", active: true },
+  { icon: Calendar, label: "Schedule" },
+  { icon: FileText, label: "Assignments" },
+  { icon: Medal, label: "Certificates" },
+  { icon: Bell, label: "Alerts" },
+];
+
+const lessons = [
+  { title: "Advanced Injectables", progress: 78, module: "Module 4" },
+  { title: "Laser Safety Protocols", progress: 45, module: "Module 2" },
+  { title: "Chemical Peels Mastery", progress: 92, module: "Module 6" },
+];
+
+const assignments = [
+  { title: "Case study: Lip anatomy", due: "Due tomorrow", done: false },
+  { title: "MCQ: Energy devices", due: "Submitted", done: true },
+];
 
 export default function StudentDashboardPreview() {
   return (
-    <section className="section-padding bg-white relative overflow-hidden">
-      <div className="absolute bottom-0 right-0 w-96 h-96 bg-teal-100/30 blur-[120px] rounded-full" />
+    <section className="section-padding relative overflow-hidden bg-white">
+      <div className="pointer-events-none absolute bottom-0 right-0 h-96 w-96 rounded-full bg-teal-100/40 blur-[120px]" />
 
       <div className="container-max relative">
-        <div className="text-center mb-14">
-          <span className="section-tag mb-4">Student Dashboard</span>
-          <h2 className="section-title mb-4 mt-4">
-            Your Personalized{" "}
-            <span className="gradient-text">Learning Hub</span>
-          </h2>
-          <p className="section-subtitle mx-auto">
-            Track progress, manage schedules, and celebrate achievements — all in one place.
-          </p>
-        </div>
+        <SectionHeader
+          tag="Learning Dashboard"
+          title={
+            <>
+              Your personalized{" "}
+              <GradientText>learning hub</GradientText>
+            </>
+          }
+          subtitle="Track progress, manage schedules, and celebrate achievements — all in one place."
+        />
 
-        {/* Dashboard mockup */}
-        <div className="glass rounded-[2rem] p-4 sm:p-6 shadow-card-hover max-w-5xl mx-auto">
-          <div className="rounded-3xl overflow-hidden bg-slate-50/80">
-            {/* Top bar */}
-            <div className="flex items-center justify-between px-5 py-4 bg-white border-b border-slate-100">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-2xl bg-gradient-brand flex items-center justify-center text-white font-bold text-sm">
-                  DA
+        <FadeIn blur>
+          <div className="mx-auto max-w-6xl overflow-hidden rounded-[28px] border border-slate-200/80 bg-slate-50/80 shadow-[0_24px_80px_rgba(15,23,42,0.1)]">
+            <div className="grid lg:grid-cols-[200px_1fr]">
+              {/* Sidebar */}
+              <aside className="hidden border-r border-slate-200/80 bg-white/90 p-5 backdrop-blur-xl lg:block">
+                <div className="mb-8 flex items-center gap-2.5">
+                  <div className="flex size-9 items-center justify-center rounded-xl bg-gradient-to-br from-teal-600 to-teal-800 text-xs font-bold text-white">
+                    SA
+                  </div>
+                  <div>
+                    <p className="text-xs font-bold text-slate-900">Skinfinity</p>
+                    <p className="text-[10px] text-slate-400">LMS Portal</p>
+                  </div>
                 </div>
-                <div>
-                  <p className="text-sm font-semibold text-slate-900">Welcome back, Dr. Arjun</p>
-                  <p className="text-[10px] text-slate-400">Fellowship in Aesthetic Dermatology</p>
-                </div>
-              </div>
-              <div className="hidden sm:flex items-center gap-2">
-                <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
-                <span className="text-xs text-slate-500">Live Session at 3:00 PM</span>
-              </div>
-            </div>
-
-            <div className="p-5 grid lg:grid-cols-3 gap-4">
-              {/* Course progress */}
-              <div className="lg:col-span-2 space-y-4">
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                  {[
-                    { icon: "menu_book", label: "Active Courses", value: "5", color: "text-teal-600 bg-teal-50" },
-                    { icon: "schedule", label: "Learning Hours", value: "248", color: "text-blue-600 bg-blue-50" },
-                    { icon: "military_tech", label: "Certificates", value: "3", color: "text-amber-600 bg-amber-50" },
-                    { icon: "trending_up", label: "Avg Score", value: "94%", color: "text-emerald-600 bg-emerald-50" },
-                  ].map((stat) => (
-                    <div key={stat.label} className="bg-white rounded-2xl p-4 shadow-soft">
-                      <div className={`w-9 h-9 rounded-xl ${stat.color} flex items-center justify-center mb-2`}>
-                        <MaterialIcon name={stat.icon} size={18} />
+                <nav className="space-y-1" aria-label="Dashboard preview navigation">
+                  {navItems.map((item) => {
+                    const Icon = item.icon;
+                    return (
+                      <div
+                        key={item.label}
+                        className={`flex items-center gap-2.5 rounded-xl px-3 py-2.5 text-xs font-medium ${
+                          item.active
+                            ? "bg-teal-50 text-teal-800"
+                            : "text-slate-500"
+                        }`}
+                      >
+                        <Icon className="size-4" aria-hidden />
+                        {item.label}
                       </div>
-                      <p className="text-xl font-bold text-slate-900">{stat.value}</p>
-                      <p className="text-[10px] text-slate-400">{stat.label}</p>
+                    );
+                  })}
+                </nav>
+              </aside>
+
+              {/* Main */}
+              <div className="p-4 sm:p-6">
+                <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
+                  <div>
+                    <p className="text-sm font-semibold text-slate-900">
+                      Welcome back, Dr. Arjun
+                    </p>
+                    <p className="text-[11px] text-slate-400">
+                      Fellowship in Aesthetic Dermatology
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-2 rounded-full bg-emerald-50 px-3 py-1.5 text-[11px] font-semibold text-emerald-700">
+                    <span className="size-1.5 animate-pulse rounded-full bg-emerald-500" />
+                    Live session · 3:00 PM
+                  </div>
+                </div>
+
+                <div className="grid gap-4 lg:grid-cols-3">
+                  <div className="space-y-4 lg:col-span-2">
+                    {/* Stat widgets */}
+                    <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+                      {[
+                        { label: "Courses", value: "5", icon: BookOpen },
+                        { label: "Hours", value: "248", icon: TrendingUp },
+                        { label: "Certificates", value: "3", icon: Medal },
+                        { label: "Avg Score", value: "94%", icon: CheckCircle2 },
+                      ].map((s) => {
+                        const Icon = s.icon;
+                        return (
+                          <div
+                            key={s.label}
+                            className="rounded-[20px] bg-white p-4 shadow-soft ring-1 ring-slate-100"
+                          >
+                            <Icon className="mb-2 size-4 text-teal-600" aria-hidden />
+                            <p className="text-xl font-bold text-slate-900">
+                              {s.value}
+                            </p>
+                            <p className="text-[10px] text-slate-400">{s.label}</p>
+                          </div>
+                        );
+                      })}
                     </div>
-                  ))}
-                </div>
 
-                {/* Continue learning */}
-                <div className="bg-white rounded-2xl p-4 shadow-soft">
-                  <h4 className="text-sm font-semibold text-slate-900 mb-3">Continue Learning</h4>
-                  <div className="space-y-2.5">
-                    {[
-                      { title: "Advanced Injectables & Fillers", progress: 78, module: "Module 4: Lip Augmentation" },
-                      { title: "Laser & Energy Devices", progress: 45, module: "Module 2: Safety Protocols" },
-                      { title: "Chemical Peels Mastery", progress: 92, module: "Module 6: Deep Peels" },
-                    ].map((c) => (
-                      <div key={c.title} className="flex items-center gap-3 p-2.5 rounded-xl hover:bg-slate-50 transition-colors">
-                        <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-teal-600 to-teal-800 flex items-center justify-center flex-shrink-0">
-                          <MaterialIcon name="play_circle" size={18} className="text-white" />
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <p className="text-xs font-semibold text-slate-900 truncate">{c.title}</p>
-                          <p className="text-[10px] text-slate-400 truncate">{c.module}</p>
-                          <div className="mt-1.5 h-1.5 bg-slate-100 rounded-full overflow-hidden">
-                            <div className="h-full bg-gradient-to-r from-teal-500 to-teal-600 rounded-full" style={{ width: `${c.progress}%` }} />
+                    {/* Chart */}
+                    <div className="rounded-[22px] bg-white p-4 shadow-soft ring-1 ring-slate-100">
+                      <div className="mb-3 flex items-center justify-between">
+                        <h4 className="text-sm font-semibold text-slate-900">
+                          Learning hours
+                        </h4>
+                        <span className="text-[10px] font-medium text-teal-600">
+                          +18% this month
+                        </span>
+                      </div>
+                      <div className="h-36">
+                        <ResponsiveContainer width="100%" height="100%">
+                          <AreaChart data={chartData}>
+                            <defs>
+                              <linearGradient id="hoursFill" x1="0" y1="0" x2="0" y2="1">
+                                <stop offset="0%" stopColor="#14B8A6" stopOpacity={0.35} />
+                                <stop offset="100%" stopColor="#14B8A6" stopOpacity={0} />
+                              </linearGradient>
+                            </defs>
+                            <XAxis
+                              dataKey="week"
+                              tickLine={false}
+                              axisLine={false}
+                              tick={{ fontSize: 10, fill: "#94a3b8" }}
+                            />
+                            <Tooltip
+                              contentStyle={{
+                                borderRadius: 12,
+                                border: "1px solid #e2e8f0",
+                                fontSize: 12,
+                              }}
+                            />
+                            <Area
+                              type="monotone"
+                              dataKey="hours"
+                              stroke="#0F766E"
+                              strokeWidth={2}
+                              fill="url(#hoursFill)"
+                            />
+                          </AreaChart>
+                        </ResponsiveContainer>
+                      </div>
+                    </div>
+
+                    {/* Recent lessons */}
+                    <div className="rounded-[22px] bg-white p-4 shadow-soft ring-1 ring-slate-100">
+                      <h4 className="mb-3 text-sm font-semibold text-slate-900">
+                        Continue learning
+                      </h4>
+                      <div className="space-y-2.5">
+                        {lessons.map((c) => (
+                          <div
+                            key={c.title}
+                            className="flex items-center gap-3 rounded-xl p-2.5 transition-colors hover:bg-slate-50"
+                          >
+                            <div className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-teal-600 to-teal-800 text-white">
+                              <Play className="size-4" aria-hidden />
+                            </div>
+                            <div className="min-w-0 flex-1">
+                              <p className="truncate text-xs font-semibold text-slate-900">
+                                {c.title}
+                              </p>
+                              <p className="text-[10px] text-slate-400">{c.module}</p>
+                              <div className="mt-1.5 h-1.5 overflow-hidden rounded-full bg-slate-100">
+                                <div
+                                  className="h-full rounded-full bg-gradient-to-r from-teal-500 to-teal-600"
+                                  style={{ width: `${c.progress}%` }}
+                                />
+                              </div>
+                            </div>
+                            <span className="text-xs font-bold text-teal-700">
+                              {c.progress}%
+                            </span>
                           </div>
-                        </div>
-                        <span className="text-xs font-bold text-teal-600">{c.progress}%</span>
+                        ))}
                       </div>
-                    ))}
+                    </div>
                   </div>
-                </div>
 
-                {/* Recent videos */}
-                <div className="bg-white rounded-2xl p-4 shadow-soft">
-                  <h4 className="text-sm font-semibold text-slate-900 mb-3">Recent Videos</h4>
-                  <div className="grid grid-cols-3 gap-3">
-                    {["Botulinum Toxin", "Filler Techniques", "Laser Safety"].map((v) => (
-                      <div key={v} className="group cursor-pointer">
-                        <div className="relative aspect-video rounded-xl bg-gradient-to-br from-teal-700 to-slate-900 overflow-hidden">
-                          <div className="absolute inset-0 pattern-grid opacity-20" />
-                          <div className="absolute inset-0 flex items-center justify-center">
-                            <MaterialIcon name="play_circle" size={24} className="text-white/80 group-hover:scale-110 transition-transform" />
+                  {/* Right widgets */}
+                  <div className="space-y-4">
+                    <div className="rounded-[22px] bg-white p-4 shadow-soft ring-1 ring-slate-100">
+                      <div className="mb-3 flex items-center gap-2">
+                        <FileText className="size-4 text-teal-600" />
+                        <h4 className="text-sm font-semibold text-slate-900">
+                          Assignments
+                        </h4>
+                      </div>
+                      <div className="space-y-2">
+                        {assignments.map((a) => (
+                          <div
+                            key={a.title}
+                            className="rounded-xl bg-slate-50 p-3"
+                          >
+                            <p className="text-xs font-medium text-slate-800">
+                              {a.title}
+                            </p>
+                            <p
+                              className={`mt-1 text-[10px] font-semibold ${
+                                a.done ? "text-emerald-600" : "text-amber-600"
+                              }`}
+                            >
+                              {a.due}
+                            </p>
                           </div>
-                        </div>
-                        <p className="text-[10px] font-medium text-slate-600 mt-1.5 truncate">{v}</p>
+                        ))}
                       </div>
-                    ))}
-                  </div>
-                </div>
-              </div>
+                    </div>
 
-              {/* Right column */}
-              <div className="space-y-4">
-                {/* Calendar */}
-                <div className="bg-white rounded-2xl p-4 shadow-soft">
-                  <div className="flex items-center gap-2 mb-3">
-                    <MaterialIcon name="calendar_month" size={16} className="text-teal-600" />
-                    <h4 className="text-sm font-semibold text-slate-900">Upcoming</h4>
-                  </div>
-                  <div className="space-y-2">
-                    {[
-                      { day: "15", month: "AUG", title: "Advanced Injectables Workshop", time: "3:00 PM" },
-                      { day: "18", month: "AUG", title: "MCQ Assessment: Module 4", time: "10:00 AM" },
-                      { day: "22", month: "AUG", title: "Live Q&A with Dr. Aisha", time: "5:00 PM" },
-                    ].map((e) => (
-                      <div key={e.title} className="flex items-center gap-3 p-2 rounded-xl hover:bg-slate-50 transition-colors">
-                        <div className="w-10 h-10 rounded-xl bg-teal-50 flex flex-col items-center justify-center flex-shrink-0">
-                          <span className="text-sm font-bold text-teal-700 leading-none">{e.day}</span>
-                          <span className="text-[8px] text-teal-500">{e.month}</span>
-                        </div>
-                        <div className="min-w-0">
-                          <p className="text-xs font-medium text-slate-700 truncate">{e.title}</p>
-                          <p className="text-[10px] text-slate-400">{e.time}</p>
-                        </div>
+                    <div className="rounded-[22px] bg-white p-4 shadow-soft ring-1 ring-slate-100">
+                      <div className="mb-3 flex items-center gap-2">
+                        <Bell className="size-4 text-violet-500" />
+                        <h4 className="text-sm font-semibold text-slate-900">
+                          Notifications
+                        </h4>
                       </div>
-                    ))}
-                  </div>
-                </div>
+                      <ul className="space-y-2.5 text-xs text-slate-600">
+                        <li className="rounded-xl bg-violet-50/80 p-2.5">
+                          New recording available: Facial anatomy
+                        </li>
+                        <li className="rounded-xl bg-teal-50/80 p-2.5">
+                          Certificate ready to download
+                        </li>
+                      </ul>
+                    </div>
 
-                {/* Leaderboard */}
-                <div className="bg-white rounded-2xl p-4 shadow-soft">
-                  <div className="flex items-center gap-2 mb-3">
-                    <MaterialIcon name="emoji_events" size={16} className="text-amber-500" />
-                    <h4 className="text-sm font-semibold text-slate-900">Leaderboard</h4>
-                  </div>
-                  <div className="space-y-2">
-                    {[
-                      { rank: 1, name: "Dr. Sneha P.", points: "2,840", medal: "🥇" },
-                      { rank: 2, name: "Dr. Arjun R.", points: "2,650", medal: "🥈" },
-                      { rank: 3, name: "Dr. Kavya M.", points: "2,430", medal: "🥉" },
-                    ].map((p) => (
-                      <div key={p.rank} className="flex items-center gap-2 p-2 rounded-xl hover:bg-slate-50 transition-colors">
-                        <span className="text-lg">{p.medal}</span>
-                        <div className="flex-1 min-w-0">
-                          <p className="text-xs font-medium text-slate-700 truncate">{p.name}</p>
-                        </div>
-                        <span className="text-xs font-bold text-teal-600">{p.points}</span>
+                    <div className="rounded-[22px] bg-gradient-to-br from-teal-700 to-teal-900 p-4 text-white">
+                      <div className="mb-3 flex items-center gap-2">
+                        <Medal className="size-4" />
+                        <h4 className="text-sm font-semibold">Certificates</h4>
                       </div>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Achievements */}
-                <div className="bg-gradient-to-br from-teal-600 to-teal-800 rounded-2xl p-4 text-white">
-                  <div className="flex items-center gap-2 mb-3">
-                    <MaterialIcon name="military_tech" size={16} />
-                    <h4 className="text-sm font-semibold">Achievements</h4>
-                  </div>
-                  <div className="grid grid-cols-3 gap-2">
-                    {[
-                      { icon: "🏆", label: "Top 5%" },
-                      { icon: "🔥", label: "30 Day Streak" },
-                      { icon: "📚", label: "Bookworm" },
-                    ].map((a) => (
-                      <div key={a.label} className="bg-white/10 backdrop-blur rounded-xl p-2.5 text-center">
-                        <p className="text-xl mb-0.5">{a.icon}</p>
-                        <p className="text-[9px] text-teal-100">{a.label}</p>
+                      <p className="text-xs text-teal-100">
+                        3 credentials earned · 1 pending verification
+                      </p>
+                      <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-white/20">
+                        <div className="h-full w-3/4 rounded-full bg-white" />
                       </div>
-                    ))}
+                    </div>
                   </div>
                 </div>
               </div>
             </div>
           </div>
-        </div>
+        </FadeIn>
       </div>
     </section>
   );

@@ -2,17 +2,86 @@
 
 import { useState, useEffect, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
-import PageHeader from "@/components/shared/PageHeader";
-import MaterialIcon from "@/components/shared/MaterialIcon";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import Link from "next/link";
+import {
+  ArrowRight,
+  BadgeCheck,
+  CheckCircle2,
+  CreditCard,
+  GraduationCap,
+  Headphones,
+  Lock,
+  MapPin,
+  Phone,
+  ShieldCheck,
+  Sparkles,
+  UserRound,
+} from "lucide-react";
+import PageHeader from "@/components/shared/PageHeader";
+import FadeIn from "@/components/motion/FadeIn";
+import GradientText from "@/components/shared/GradientText";
+import { cn } from "@/lib/utils";
+
+const inputClass =
+  "w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 shadow-sm outline-none transition-all placeholder:text-slate-400 focus:border-teal-500 focus:ring-4 focus:ring-teal-500/15";
+
+const labelClass =
+  "mb-1.5 block text-[11px] font-semibold uppercase tracking-wider text-slate-500";
+
+const selectClass = cn(inputClass, "appearance-none cursor-pointer pr-10");
+
+const trustPoints = [
+  { icon: ShieldCheck, text: "Reviewed by academic board within 24 hours" },
+  { icon: Lock, text: "Secure application — your data stays private" },
+  { icon: BadgeCheck, text: "CIBTAC & CIDESCO aligned programs" },
+  { icon: Headphones, text: "Free 1:1 counseling available anytime" },
+];
+
+function Field({
+  label,
+  children,
+  className,
+}: {
+  label: string;
+  children: React.ReactNode;
+  className?: string;
+}) {
+  return (
+    <div className={cn("space-y-0", className)}>
+      <label className={labelClass}>{label}</label>
+      {children}
+    </div>
+  );
+}
+
+function SectionTitle({
+  step,
+  icon: Icon,
+  title,
+}: {
+  step: number;
+  icon: React.ComponentType<{ className?: string }>;
+  title: string;
+}) {
+  return (
+    <div className="mb-5 flex items-center gap-3 border-b border-slate-100 pb-3">
+      <div className="flex size-9 items-center justify-center rounded-xl bg-gradient-to-br from-teal-600 to-teal-700 text-sm font-bold text-white shadow-teal">
+        {step}
+      </div>
+      <div className="flex items-center gap-2">
+        <Icon className="size-4 text-teal-600" aria-hidden />
+        <h3 className="text-base font-bold text-slate-900">{title}</h3>
+      </div>
+    </div>
+  );
+}
 
 function EnrollFormContent() {
   const searchParams = useSearchParams();
-  const initialProgram = searchParams.get("program") || searchParams.get("title") || "Certificate in Clinical Cosmetology";
+  const initialProgram =
+    searchParams.get("program") ||
+    searchParams.get("title") ||
+    "Fellowship in Aesthetic Dermatology";
 
   const [submitted, setSubmitted] = useState(false);
   const [formData, setFormData] = useState({
@@ -23,7 +92,6 @@ function EnrollFormContent() {
     regNumber: "",
     program: initialProgram,
     campus: "Bengaluru Clinical Campus (MG Road)",
-    trainingMode: "Hands-On Practical",
     batch: "August 2025 Upcoming Batch",
     paymentOption: "deposit",
   });
@@ -34,295 +102,427 @@ function EnrollFormContent() {
     }
   }, [initialProgram]);
 
+  const update = (key: keyof typeof formData, value: string) =>
+    setFormData((prev) => ({ ...prev, [key]: value }));
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setSubmitted(true);
   };
 
+  const paymentOptions = [
+    {
+      id: "deposit",
+      title: "Pay Seat Reservation Deposit",
+      desc: "Lock your seat today; balance payable at campus onset.",
+      badge: "₹5,000",
+      badgeTone: "solid" as const,
+    },
+    {
+      id: "full",
+      title: "Pay Full Program Fee",
+      desc: "Includes instant LMS portal & video vault access.",
+      badge: "Full Fee",
+      badgeTone: "outline" as const,
+    },
+    {
+      id: "callback",
+      title: "Request 1:1 Admissions Counseling",
+      desc: "Free call with an academic advisor to discuss curriculum & dates.",
+      badge: "FREE",
+      badgeTone: "free" as const,
+    },
+  ];
+
+  if (submitted) {
+    return (
+      <FadeIn>
+        <div className="overflow-hidden rounded-[28px] border border-slate-200/80 bg-white p-8 text-center shadow-[0_20px_60px_rgba(15,23,42,0.08)] sm:p-12">
+          <div className="mx-auto mb-5 flex size-20 items-center justify-center rounded-full bg-gradient-to-br from-teal-50 to-cyan-50 text-teal-600 ring-8 ring-teal-50">
+            <CheckCircle2 className="size-10" />
+          </div>
+          <span className="mb-3 inline-flex rounded-full bg-teal-600 px-4 py-1 text-xs font-bold text-white">
+            Application submitted successfully
+          </span>
+          <h3 className="mb-2 text-2xl font-bold text-slate-900 sm:text-3xl">
+            Welcome to Skinfinity Academy
+          </h3>
+          <p className="mx-auto mb-6 max-w-md text-sm leading-relaxed text-slate-600">
+            Thank you,{" "}
+            <strong className="text-slate-900">
+              {formData.fullName || "Doctor"}
+            </strong>
+            ! Your reference code is{" "}
+            <span className="font-mono font-bold text-teal-700">
+              #SA-ENROLL-9041
+            </span>{" "}
+            for <strong>{formData.program}</strong>.
+          </p>
+
+          <div className="mx-auto mb-8 max-w-md space-y-2.5 rounded-[22px] border border-slate-100 bg-slate-50/80 p-5 text-left text-sm">
+            <div className="flex justify-between gap-4">
+              <span className="text-slate-500">Email</span>
+              <span className="font-semibold text-slate-800">
+                {formData.email || "doctor@example.com"}
+              </span>
+            </div>
+            <div className="flex justify-between gap-4">
+              <span className="text-slate-500">Campus</span>
+              <span className="text-right font-semibold text-slate-800">
+                {formData.campus}
+              </span>
+            </div>
+            <div className="flex justify-between gap-4">
+              <span className="text-slate-500">Advisor</span>
+              <span className="font-semibold text-teal-700">
+                Dr. Rajesh Kumar (MD)
+              </span>
+            </div>
+          </div>
+
+          <Link href="/courses" className="btn-primary inline-flex">
+            Browse all courses
+            <ArrowRight className="size-4" />
+          </Link>
+        </div>
+      </FadeIn>
+    );
+  }
+
   return (
-    <Card className="rounded-3xl border-slate-200/80 shadow-soft overflow-hidden bg-white">
-      <CardHeader className="bg-slate-900 text-white p-6 sm:p-8">
-        <div className="flex items-center gap-2 mb-2">
-          <Badge className="bg-teal-500/20 text-teal-300 border-teal-500/30 uppercase text-[10px] tracking-widest">
-            Admissions Application Form
-          </Badge>
-          <Badge className="bg-amber-500/20 text-amber-300 border-amber-500/30 uppercase text-[10px] tracking-widest">
-            Batch 2025-2026
-          </Badge>
+    <FadeIn>
+      <div className="overflow-hidden rounded-[28px] border border-slate-200/80 bg-white shadow-[0_20px_60px_rgba(15,23,42,0.08)]">
+        {/* Premium header */}
+        <div className="relative overflow-hidden bg-gradient-to-br from-teal-800 via-teal-700 to-violet-900 px-6 py-7 sm:px-8 sm:py-8">
+          <div className="absolute inset-0 pattern-grid opacity-20" aria-hidden />
+          <div className="absolute -right-10 -top-10 h-40 w-40 rounded-full bg-cyan-300/20 blur-3xl" />
+          <div className="absolute -bottom-8 left-1/3 h-32 w-32 rounded-full bg-violet-400/25 blur-3xl" />
+
+          <div className="relative">
+            <div className="mb-3 flex flex-wrap items-center gap-2">
+              <span className="inline-flex items-center gap-1.5 rounded-full border border-white/20 bg-white/10 px-3 py-1 text-[10px] font-bold uppercase tracking-widest text-teal-50 backdrop-blur">
+                <Sparkles className="size-3" />
+                Admissions application
+              </span>
+              <span className="inline-flex rounded-full border border-amber-300/30 bg-amber-400/15 px-3 py-1 text-[10px] font-bold uppercase tracking-widest text-amber-200">
+                Batch 2025–2026
+              </span>
+            </div>
+            <h2 className="text-2xl font-bold text-white sm:text-3xl">
+              Skinfinity Academy Enrollment
+            </h2>
+            <p className="mt-2 max-w-xl text-sm leading-relaxed text-teal-100">
+              Complete your application to reserve a 1:1 doctor-supervised
+              clinical seat. Reviewed within 24 hours.
+            </p>
+          </div>
         </div>
 
-        <CardTitle className="text-2xl sm:text-3xl font-extrabold text-white">
-          Skinfinity Academy Enrollment Form
-        </CardTitle>
-        <CardDescription className="text-slate-300 text-sm">
-          Complete your application directly below to reserve your 1:1 doctor-supervised clinical seat.
-        </CardDescription>
-      </CardHeader>
-
-      <CardContent className="p-6 sm:p-8">
-        {!submitted ? (
-          <form onSubmit={handleSubmit} className="space-y-8">
-            {/* Section 1: Doctor / Applicant Details */}
-            <div className="space-y-4">
-              <div className="flex items-center gap-2 border-b border-slate-100 pb-2">
-                <div className="w-7 h-7 rounded-lg bg-teal-50 text-teal-600 flex items-center justify-center font-bold text-xs">
-                  1
-                </div>
-                <h3 className="text-base font-bold text-slate-900">Doctor &amp; Applicant Information</h3>
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div className="space-y-1.5">
-                  <label className="text-xs font-bold text-slate-700 uppercase tracking-wider">FULL NAME (WITH PREFIX) *</label>
-                  <Input
-                    type="text"
-                    required
-                    value={formData.fullName}
-                    onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
-                    placeholder="e.g. Dr. Priya Sharma"
-                    className="rounded-xl bg-slate-50"
-                  />
-                </div>
-
-                <div className="space-y-1.5">
-                  <label className="text-xs font-bold text-slate-700 uppercase tracking-wider">EMAIL ADDRESS *</label>
-                  <Input
-                    type="email"
-                    required
-                    value={formData.email}
-                    onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                    placeholder="doctor@example.com"
-                    className="rounded-xl bg-slate-50"
-                  />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div className="space-y-1.5">
-                  <label className="text-xs font-bold text-slate-700 uppercase tracking-wider">PHONE / WHATSAPP NUMBER *</label>
-                  <Input
-                    type="tel"
-                    required
-                    value={formData.phone}
-                    onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                    placeholder="+91 98765 43210"
-                    className="rounded-xl bg-slate-50"
-                  />
-                </div>
-
-                <div className="space-y-1.5">
-                  <label className="text-xs font-bold text-slate-700 uppercase tracking-wider">QUALIFICATION / SPECIALIZATION *</label>
+        <form onSubmit={handleSubmit} className="space-y-7 p-6 sm:p-8">
+          {/* Section 1 */}
+          <section>
+            <SectionTitle
+              step={1}
+              icon={UserRound}
+              title="Doctor & Applicant Information"
+            />
+            <div className="grid gap-4 sm:grid-cols-2">
+              <Field label="Full name (with prefix) *">
+                <input
+                  type="text"
+                  required
+                  value={formData.fullName}
+                  onChange={(e) => update("fullName", e.target.value)}
+                  placeholder="e.g. Dr. Priya Sharma"
+                  className={inputClass}
+                />
+              </Field>
+              <Field label="Email address *">
+                <input
+                  type="email"
+                  required
+                  value={formData.email}
+                  onChange={(e) => update("email", e.target.value)}
+                  placeholder="doctor@example.com"
+                  className={inputClass}
+                />
+              </Field>
+              <Field label="Phone / WhatsApp *">
+                <input
+                  type="tel"
+                  required
+                  value={formData.phone}
+                  onChange={(e) => update("phone", e.target.value)}
+                  placeholder="+91 98765 43210"
+                  className={inputClass}
+                />
+              </Field>
+              <Field label="Qualification / Specialization *">
+                <div className="relative">
                   <select
                     value={formData.qualification}
-                    onChange={(e) => setFormData({ ...formData, qualification: e.target.value })}
-                    className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium text-slate-900 focus:outline-none focus:border-teal-500"
+                    onChange={(e) => update("qualification", e.target.value)}
+                    className={selectClass}
                   >
                     <option value="MBBS Doctor">MBBS Doctor</option>
-                    <option value="MD Dermatology / DVD">MD Dermatology / DVD</option>
-                    <option value="BDS / MDS Dental Surgeon">BDS / MDS Dental Surgeon</option>
-                    <option value="BAMS / BHMS Physician">BAMS / BHMS Physician</option>
-                    <option value="Certified Cosmetologist">Certified Cosmetologist</option>
-                    <option value="Other Medical Specialist">Other Medical Specialist</option>
+                    <option value="MD Dermatology / DVD">
+                      MD Dermatology / DVD
+                    </option>
+                    <option value="BDS / MDS Dental Surgeon">
+                      BDS / MDS Dental Surgeon
+                    </option>
+                    <option value="BAMS / BHMS Physician">
+                      BAMS / BHMS Physician
+                    </option>
+                    <option value="Certified Cosmetologist">
+                      Certified Cosmetologist
+                    </option>
+                    <option value="Other Medical Specialist">
+                      Other Medical Specialist
+                    </option>
                   </select>
+                  <GraduationCap className="pointer-events-none absolute right-3.5 top-1/2 size-4 -translate-y-1/2 text-slate-400" />
                 </div>
-              </div>
-
-              <div className="space-y-1.5">
-                <label className="text-xs font-bold text-slate-700 uppercase tracking-wider">MEDICAL COUNCIL REGISTRATION NO. (OPTIONAL)</label>
-                <Input
+              </Field>
+              <Field
+                label="Medical council registration no. (optional)"
+                className="sm:col-span-2"
+              >
+                <input
                   type="text"
                   value={formData.regNumber}
-                  onChange={(e) => setFormData({ ...formData, regNumber: e.target.value })}
+                  onChange={(e) => update("regNumber", e.target.value)}
                   placeholder="e.g. KMC/12345/2020"
-                  className="rounded-xl bg-slate-50"
+                  className={inputClass}
                 />
-              </div>
+              </Field>
             </div>
+          </section>
 
-            {/* Section 2: Program & Campus Preferences */}
-            <div className="space-y-4 pt-2">
-              <div className="flex items-center gap-2 border-b border-slate-100 pb-2">
-                <div className="w-7 h-7 rounded-lg bg-teal-50 text-teal-600 flex items-center justify-center font-bold text-xs">
-                  2
-                </div>
-                <h3 className="text-base font-bold text-slate-900">Program &amp; Campus Preferences</h3>
-              </div>
-
-              <div className="space-y-1.5">
-                <label className="text-xs font-bold text-slate-700 uppercase tracking-wider">SELECTED PROGRAM / COURSE *</label>
-                <Input
+          {/* Section 2 */}
+          <section>
+            <SectionTitle
+              step={2}
+              icon={MapPin}
+              title="Program & Campus Preferences"
+            />
+            <div className="grid gap-4 sm:grid-cols-2">
+              <Field label="Selected program / course *" className="sm:col-span-2">
+                <input
                   type="text"
                   required
                   value={formData.program}
-                  onChange={(e) => setFormData({ ...formData, program: e.target.value })}
-                  placeholder="e.g. Certificate in Clinical Cosmetology"
-                  className="rounded-xl bg-slate-50 font-bold text-teal-700"
+                  onChange={(e) => update("program", e.target.value)}
+                  placeholder="e.g. Fellowship in Aesthetic Dermatology"
+                  className={cn(inputClass, "font-semibold text-teal-700")}
                 />
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div className="space-y-1.5">
-                  <label className="text-xs font-bold text-slate-700 uppercase tracking-wider">PREFERRED CAMPUS LOCATION *</label>
+              </Field>
+              <Field label="Preferred campus *">
+                <div className="relative">
                   <select
                     value={formData.campus}
-                    onChange={(e) => setFormData({ ...formData, campus: e.target.value })}
-                    className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium text-slate-900 focus:outline-none focus:border-teal-500"
+                    onChange={(e) => update("campus", e.target.value)}
+                    className={selectClass}
                   >
-                    <option value="Bengaluru Clinical Campus (MG Road)">Bengaluru Clinical Campus (MG Road)</option>
-                    <option value="Mumbai Clinical Campus (Bandra West)">Mumbai Campus (Bandra West)</option>
-                    <option value="Delhi NCR Campus (Sarita Vihar)">Delhi NCR Campus (Sarita Vihar)</option>
-                    <option value="Hyderabad Campus (Jubilee Hills)">Hyderabad Campus (Jubilee Hills)</option>
-                    <option value="Online Live Hybrid HD Zoom">Online HD Zoom Stream</option>
+                    <option value="Bengaluru Clinical Campus (MG Road)">
+                      Bengaluru Clinical Campus (MG Road)
+                    </option>
+                    <option value="Mumbai Clinical Campus (Bandra West)">
+                      Mumbai Campus (Bandra West)
+                    </option>
+                    <option value="Delhi NCR Campus (Sarita Vihar)">
+                      Delhi NCR Campus (Sarita Vihar)
+                    </option>
+                    <option value="Hyderabad Campus (Jubilee Hills)">
+                      Hyderabad Campus (Jubilee Hills)
+                    </option>
+                    <option value="Online Live Hybrid HD Zoom">
+                      Online HD Zoom Stream
+                    </option>
                   </select>
+                  <MapPin className="pointer-events-none absolute right-3.5 top-1/2 size-4 -translate-y-1/2 text-slate-400" />
                 </div>
+              </Field>
+              <Field label="Upcoming batch *">
+                <select
+                  value={formData.batch}
+                  onChange={(e) => update("batch", e.target.value)}
+                  className={selectClass}
+                >
+                  <option value="August 2025 Upcoming Batch">
+                    August 2025 Upcoming Batch
+                  </option>
+                  <option value="September 2025 Batch">
+                    September 2025 Batch
+                  </option>
+                  <option value="October 2025 Batch">October 2025 Batch</option>
+                </select>
+              </Field>
+            </div>
+          </section>
 
-                <div className="space-y-1.5">
-                  <label className="text-xs font-bold text-slate-700 uppercase tracking-wider">UPCOMING BATCH *</label>
-                  <select
-                    value={formData.batch}
-                    onChange={(e) => setFormData({ ...formData, batch: e.target.value })}
-                    className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium text-slate-900 focus:outline-none focus:border-teal-500"
+          {/* Section 3 */}
+          <section>
+            <SectionTitle
+              step={3}
+              icon={CreditCard}
+              title="Seat Reservation Choice"
+            />
+            <div className="space-y-3">
+              {paymentOptions.map((opt) => {
+                const active = formData.paymentOption === opt.id;
+                return (
+                  <button
+                    key={opt.id}
+                    type="button"
+                    onClick={() => update("paymentOption", opt.id)}
+                    className={cn(
+                      "group flex w-full items-center justify-between gap-4 rounded-[20px] border p-4 text-left transition-all duration-300",
+                      active
+                        ? "border-teal-500 bg-teal-50/60 shadow-[0_8px_24px_rgba(15,118,110,0.12)] ring-1 ring-teal-500/40"
+                        : "border-slate-200 bg-white hover:-translate-y-0.5 hover:border-teal-200 hover:shadow-soft"
+                    )}
                   >
-                    <option value="August 2025 Upcoming Batch">August 2025 Upcoming Batch</option>
-                    <option value="September 2025 Batch">September 2025 Batch</option>
-                    <option value="October 2025 Batch">October 2025 Batch</option>
-                  </select>
-                </div>
-              </div>
+                    <div className="flex items-start gap-3">
+                      <span
+                        className={cn(
+                          "mt-0.5 flex size-5 shrink-0 items-center justify-center rounded-full border-2 transition-colors",
+                          active
+                            ? "border-teal-600 bg-teal-600"
+                            : "border-slate-300 bg-white"
+                        )}
+                      >
+                        {active && (
+                          <CheckCircle2 className="size-3.5 text-white" />
+                        )}
+                      </span>
+                      <div>
+                        <p className="text-sm font-bold text-slate-900">
+                          {opt.title}
+                        </p>
+                        <p className="mt-0.5 text-xs leading-relaxed text-slate-500">
+                          {opt.desc}
+                        </p>
+                      </div>
+                    </div>
+                    <span
+                      className={cn(
+                        "shrink-0 rounded-full px-3 py-1 text-xs font-bold",
+                        opt.badgeTone === "solid" &&
+                          "bg-teal-600 text-white",
+                        opt.badgeTone === "outline" &&
+                          "border border-slate-200 text-slate-700",
+                        opt.badgeTone === "free" &&
+                          "border border-emerald-200 bg-emerald-50 text-emerald-700"
+                      )}
+                    >
+                      {opt.badge}
+                    </span>
+                  </button>
+                );
+              })}
             </div>
+          </section>
 
-            {/* Section 3: Reservation Payment Options */}
-            <div className="space-y-4 pt-2">
-              <div className="flex items-center gap-2 border-b border-slate-100 pb-2">
-                <div className="w-7 h-7 rounded-lg bg-teal-50 text-teal-600 flex items-center justify-center font-bold text-xs">
-                  3
-                </div>
-                <h3 className="text-base font-bold text-slate-900">Seat Reservation Choice</h3>
-              </div>
-
-              <div className="space-y-3">
-                <label
-                  onClick={() => setFormData({ ...formData, paymentOption: "deposit" })}
-                  className={`p-4 rounded-2xl border flex items-center justify-between cursor-pointer transition-all ${
-                    formData.paymentOption === "deposit"
-                      ? "border-teal-500 bg-teal-50/50 ring-1 ring-teal-500"
-                      : "border-slate-200 bg-white"
-                  }`}
-                >
-                  <div className="space-y-0.5">
-                    <p className="text-sm font-bold text-slate-900">Pay Seat Reservation Deposit (₹5,000)</p>
-                    <p className="text-xs text-slate-500">Lock your seat today; balance payable at campus onset.</p>
-                  </div>
-                  <Badge className="bg-teal-600 text-white font-bold text-xs">₹5,000</Badge>
-                </label>
-
-                <label
-                  onClick={() => setFormData({ ...formData, paymentOption: "full" })}
-                  className={`p-4 rounded-2xl border flex items-center justify-between cursor-pointer transition-all ${
-                    formData.paymentOption === "full"
-                      ? "border-teal-500 bg-teal-50/50 ring-1 ring-teal-500"
-                      : "border-slate-200 bg-white"
-                  }`}
-                >
-                  <div className="space-y-0.5">
-                    <p className="text-sm font-bold text-slate-900">Pay Full Program Fee</p>
-                    <p className="text-xs text-slate-500">Includes instant online LMS portal &amp; video vault access.</p>
-                  </div>
-                  <Badge variant="outline" className="font-bold text-xs">Full Fee</Badge>
-                </label>
-
-                <label
-                  onClick={() => setFormData({ ...formData, paymentOption: "callback" })}
-                  className={`p-4 rounded-2xl border flex items-center justify-between cursor-pointer transition-all ${
-                    formData.paymentOption === "callback"
-                      ? "border-teal-500 bg-teal-50/50 ring-1 ring-teal-500"
-                      : "border-slate-200 bg-white"
-                  }`}
-                >
-                  <div className="space-y-0.5">
-                    <p className="text-sm font-bold text-slate-900">Request 1:1 Doctor Admissions Counseling Call</p>
-                    <p className="text-xs text-slate-500">Free call with an academic advisor to discuss curriculum &amp; dates.</p>
-                  </div>
-                  <Badge variant="outline" className="font-bold text-xs">FREE</Badge>
-                </label>
-              </div>
-            </div>
-
-            {/* Submit CTA Button */}
-            <div className="pt-6 border-t border-slate-100 flex flex-col sm:flex-row items-center justify-between gap-4">
-              <p className="text-xs text-slate-500 italic">
-                * All doctor applications are reviewed by our academic board within 24 hours.
-              </p>
-              <Button
-                type="submit"
-                className="w-full sm:w-auto px-8 py-3.5 bg-teal-600 hover:bg-teal-700 text-white font-bold text-sm rounded-xl transition-all shadow-teal flex items-center justify-center gap-2 cursor-pointer"
-              >
-                SUBMIT ENROLLMENT APPLICATION &gt;
-              </Button>
-            </div>
-          </form>
-        ) : (
-          <div className="text-center py-10 space-y-4">
-            <div className="w-20 h-20 rounded-full bg-teal-100 text-teal-600 flex items-center justify-center mx-auto shadow-md">
-              <MaterialIcon name="check_circle" size={48} />
-            </div>
-
-            <Badge className="bg-teal-600 text-white font-extrabold px-4 py-1 rounded-full text-xs">
-              Application Submitted Successfully!
-            </Badge>
-
-            <h3 className="text-2xl font-bold text-slate-900" style={{ fontFamily: "var(--font-heading), sans-serif" }}>
-              Welcome to Skinfinity Academy
-            </h3>
-
-            <p className="text-sm text-slate-600 max-w-md mx-auto">
-              Thank you, <strong className="text-slate-900">{formData.fullName || "Doctor"}</strong>! Your reference code is <span className="font-mono font-bold text-teal-700">#SA-ENROLL-9041</span> for the <strong>{formData.program}</strong>.
+          {/* Submit */}
+          <div className="flex flex-col items-start justify-between gap-4 border-t border-slate-100 pt-6 sm:flex-row sm:items-center">
+            <p className="text-xs leading-relaxed text-slate-500">
+              All doctor applications are reviewed by our academic board within
+              24 hours.
             </p>
-
-            <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200 text-xs text-left max-w-md mx-auto space-y-1.5">
-              <p className="flex justify-between">
-                <span className="text-slate-500">Applicant Email:</span>
-                <span className="font-bold text-slate-800">{formData.email || "doctor@example.com"}</span>
-              </p>
-              <p className="flex justify-between">
-                <span className="text-slate-500">Selected Campus:</span>
-                <span className="font-bold text-slate-800">{formData.campus}</span>
-              </p>
-              <p className="flex justify-between">
-                <span className="text-slate-500">Academic Advisor Lead:</span>
-                <span className="font-bold text-teal-700">Dr. Rajesh Kumar (MD)</span>
-              </p>
-            </div>
-
-            <div className="pt-4 flex justify-center gap-3">
-              <Link href="/courses">
-                <Button className="bg-teal-600 hover:bg-teal-700 text-white font-bold rounded-xl px-8 py-3">
-                  Back to All Courses
-                </Button>
-              </Link>
-            </div>
+            <button type="submit" className="btn-primary btn-ripple group w-full sm:w-auto">
+              Submit enrollment application
+              <ArrowRight className="size-4 transition-transform group-hover:translate-x-0.5" />
+            </button>
           </div>
-        )}
-      </CardContent>
-    </Card>
+        </form>
+      </div>
+    </FadeIn>
+  );
+}
+
+function EnrollSidebar() {
+  return (
+    <FadeIn delay={0.1} className="space-y-4 lg:sticky lg:top-28">
+      <div className="rounded-[24px] border border-slate-200/80 bg-white p-6 shadow-soft">
+        <h3 className="mb-4 text-base font-bold text-slate-900">
+          Why doctors enroll with us
+        </h3>
+        <ul className="space-y-3.5">
+          {trustPoints.map((item) => {
+            const Icon = item.icon;
+            return (
+              <li key={item.text} className="flex items-start gap-3">
+                <span className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-teal-50 text-teal-700">
+                  <Icon className="size-4" aria-hidden />
+                </span>
+                <span className="text-sm leading-snug text-slate-600">
+                  {item.text}
+                </span>
+              </li>
+            );
+          })}
+        </ul>
+      </div>
+
+      <div className="rounded-[24px] bg-gradient-to-br from-teal-700 to-teal-900 p-6 text-white shadow-teal">
+        <div className="mb-3 flex size-10 items-center justify-center rounded-xl bg-white/15 backdrop-blur">
+          <Phone className="size-5" />
+        </div>
+        <h3 className="mb-1 text-base font-bold">Need help applying?</h3>
+        <p className="mb-4 text-sm leading-relaxed text-teal-100">
+          Talk to an admissions counselor about eligibility, fees, and batch
+          dates.
+        </p>
+        <Link
+          href="/contact"
+          className="inline-flex items-center gap-2 rounded-2xl bg-white px-4 py-2.5 text-sm font-bold text-teal-800 transition-all hover:bg-teal-50"
+        >
+          Contact admissions
+          <ArrowRight className="size-4" />
+        </Link>
+      </div>
+    </FadeIn>
+  );
+}
+
+function FormSkeleton() {
+  return (
+    <div className="h-[520px] animate-pulse rounded-[28px] bg-white shadow-soft ring-1 ring-slate-100" />
   );
 }
 
 export default function EnrollPage() {
   return (
-    <div className="bg-slate-50/60 min-h-screen">
+    <div className="min-h-screen bg-[#F8FAFC]">
       <PageHeader
         title="Student Admissions &"
         highlight="Enrollment Form"
-        subtitle="Complete your doctor registration application directly on this page for hands-on clinical courses and workshops."
+        subtitle="Complete your doctor registration application for hands-on clinical courses and workshops."
         breadcrumb="Enrollment"
       />
 
-      <section className="py-10">
-        <div className="container-max px-4 sm:px-6 lg:px-8 max-w-4xl">
-          <Suspense fallback={<div className="p-8 text-center text-slate-500 font-semibold">Loading enrollment form...</div>}>
-            <EnrollFormContent />
-          </Suspense>
+      <section className="relative overflow-hidden px-4 py-8 sm:px-6 sm:py-10 lg:px-8">
+        <div className="pointer-events-none absolute left-1/4 top-0 h-64 w-64 rounded-full bg-teal-200/25 blur-[100px]" />
+        <div className="pointer-events-none absolute bottom-0 right-1/4 h-56 w-56 rounded-full bg-violet-200/20 blur-[90px]" />
+
+        <div className="container-max relative">
+          <div className="mb-6 text-center lg:mb-8">
+            <p className="text-sm text-slate-500">
+              Applying for a{" "}
+              <GradientText className="font-semibold">
+                clinical training seat
+              </GradientText>
+              ? Fill the form — our team responds within a day.
+            </p>
+          </div>
+
+          <div className="grid items-start gap-6 lg:grid-cols-[1fr_280px] xl:grid-cols-[1fr_300px] xl:gap-8">
+            <Suspense fallback={<FormSkeleton />}>
+              <EnrollFormContent />
+            </Suspense>
+            <EnrollSidebar />
+          </div>
         </div>
       </section>
     </div>

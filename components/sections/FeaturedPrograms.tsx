@@ -1,19 +1,29 @@
-import MaterialIcon from "@/components/shared/MaterialIcon";
+"use client";
 
-const courses = [
+import Link from "next/link";
+import { ArrowRight } from "lucide-react";
+import CourseCard, { type CourseCardData } from "@/components/shared/CourseCard";
+import { Stagger, StaggerItem } from "@/components/motion/Stagger";
+import SectionHeader from "@/components/shared/SectionHeader";
+import GradientText from "@/components/shared/GradientText";
+
+const courses: CourseCardData[] = [
   {
     title: "Fellowship in Aesthetic Dermatology",
     desc: "Comprehensive 6-month fellowship covering advanced aesthetic procedures, injectables, lasers, and clinical practice.",
     image:
       "https://images.pexels.com/photos/7088530/pexels-photo-7088530.jpeg?auto=compress&cs=tinysrgb&w=800",
     duration: "6 Months",
-    mode: "Hybrid",
+    lessons: 48,
     certificate: "Fellowship Certificate",
     faculty: "Dr. Aisha Sharma",
+    facultyAvatar:
+      "https://images.pexels.com/photos/5214958/pexels-photo-5214958.jpeg?auto=compress&cs=tinysrgb&w=200",
     price: "₹1,20,000",
     rating: 4.9,
-    tag: "Most Popular",
-    tagColor: "bg-teal-600",
+    // progress: 0,
+    bestseller: true,
+    href: "/courses/fellowship-aesthetic-dermatology",
   },
   {
     title: "Certificate in Clinical Cosmetology",
@@ -21,13 +31,15 @@ const courses = [
     image:
       "https://images.pexels.com/photos/4173251/pexels-photo-4173251.jpeg?auto=compress&cs=tinysrgb&w=800",
     duration: "3 Months",
-    mode: "Online + Hands-on",
+    lessons: 32,
     certificate: "CIBTAC Certificate",
     faculty: "Dr. Rajesh Kumar",
+    facultyAvatar:
+      "https://images.pexels.com/photos/6234600/pexels-photo-6234600.jpeg?auto=compress&cs=tinysrgb&w=200",
     price: "₹65,000",
     rating: 4.8,
     tag: "Best Value",
-    tagColor: "bg-amber-500",
+    href: "/courses/certificate-clinical-cosmetology",
   },
   {
     title: "Advanced Injectables & Dermal Fillers",
@@ -35,13 +47,15 @@ const courses = [
     image:
       "https://images.pexels.com/photos/4226119/pexels-photo-4226119.jpeg?auto=compress&cs=tinysrgb&w=800",
     duration: "2 Weeks",
-    mode: "In-Person",
+    lessons: 16,
     certificate: "Workshop Certificate",
     faculty: "Dr. Priya Menon",
+    facultyAvatar:
+      "https://images.pexels.com/photos/5407206/pexels-photo-5407206.jpeg?auto=compress&cs=tinysrgb&w=200",
     price: "₹45,000",
     rating: 5.0,
     tag: "New",
-    tagColor: "bg-emerald-500",
+    href: "/courses/advanced-injectables-fillers",
   },
   {
     title: "Trichology & Hair Sciences",
@@ -49,13 +63,14 @@ const courses = [
     image:
       "https://images.pexels.com/photos/3992854/pexels-photo-3992854.jpeg?auto=compress&cs=tinysrgb&w=800",
     duration: "4 Months",
-    mode: "Online",
+    lessons: 28,
     certificate: "Certificate of Completion",
     faculty: "Dr. Vikram Singh",
+    facultyAvatar:
+      "https://images.pexels.com/photos/6234600/pexels-photo-6234600.jpeg?auto=compress&cs=tinysrgb&w=200",
     price: "₹38,000",
     rating: 4.7,
-    tag: null,
-    tagColor: "",
+    href: "/courses/trichology-hair-sciences",
   },
   {
     title: "Laser & Energy-Based Devices",
@@ -63,13 +78,14 @@ const courses = [
     image:
       "https://images.pexels.com/photos/4226140/pexels-photo-4226140.jpeg?auto=compress&cs=tinysrgb&w=800",
     duration: "1 Month",
-    mode: "Hybrid",
+    lessons: 20,
     certificate: "Certificate of Completion",
     faculty: "Dr. Neha Gupta",
+    facultyAvatar:
+      "https://images.pexels.com/photos/5214958/pexels-photo-5214958.jpeg?auto=compress&cs=tinysrgb&w=200",
     price: "₹28,000",
     rating: 4.8,
-    tag: null,
-    tagColor: "",
+    href: "/courses/laser-energy-devices",
   },
   {
     title: "Chemical Peels & Skin Rejuvenation",
@@ -77,136 +93,48 @@ const courses = [
     image:
       "https://images.pexels.com/photos/6621339/pexels-photo-6621339.jpeg?auto=compress&cs=tinysrgb&w=800",
     duration: "2 Weeks",
-    mode: "Online",
+    lessons: 12,
     certificate: "Workshop Certificate",
     faculty: "Dr. Arjun Reddy",
+    facultyAvatar:
+      "https://images.pexels.com/photos/5407206/pexels-photo-5407206.jpeg?auto=compress&cs=tinysrgb&w=200",
     price: "₹22,000",
     rating: 4.9,
-    tag: null,
-    tagColor: "",
+    href: "/courses/chemical-peels-rejuvenation",
   },
 ];
 
 export default function FeaturedPrograms() {
   return (
-    <section id="courses" className="section-padding bg-slate-50/50">
+    <section id="courses" className="bg-[#F8FAFC] px-4 pb-8 pt-8 sm:px-6 sm:pb-8 sm:pt-10 lg:px-8 lg:pt-12">
       <div className="container-max">
-        <div className="text-center mb-14">
-          <span className="section-tag mb-4">Featured Programs</span>
-          <h2 className="section-title mb-4 mt-4">
-            Curated Courses for{" "}
-            <span className="gradient-text">Medical Excellence</span>
-          </h2>
-          <p className="section-subtitle mx-auto">
-            Explore our flagship programs designed by leading dermatologists and
-            aesthetic medicine experts.
-          </p>
-        </div>
+        <SectionHeader
+          tag="Featured Programs"
+          title={
+            <>
+              Curated courses for{" "}
+              <GradientText>medical excellence</GradientText>
+            </>
+          }
+          subtitle="Explore flagship programs designed by leading dermatologists and aesthetic medicine experts."
+        />
 
-        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {courses.map((course, i) => (
-            <div
-              key={course.title}
-              className="card-academy overflow-hidden group animate-on-scroll"
-              style={{ transitionDelay: `${i * 80}ms` }}
-            >
-              {/* Image */}
-              <div className="relative h-52 overflow-hidden">
-                <img
-                  src={course.image}
-                  alt={course.title}
-                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-slate-900/60 via-transparent to-transparent" />
-                {course.tag && (
-                  <span
-                    className={`absolute top-3 left-3 ${course.tagColor} text-white text-[10px] font-bold px-3 py-1.5 rounded-full shadow-lg`}
-                  >
-                    {course.tag}
-                  </span>
-                )}
-                <div className="absolute bottom-3 right-3 glass rounded-xl px-2.5 py-1.5 flex items-center gap-1">
-                  <MaterialIcon
-                    name="star"
-                    size={12}
-                    className="text-amber-400"
-                    filled
-                  />
-                  <span className="text-xs font-bold text-white">
-                    {course.rating}
-                  </span>
-                </div>
-              </div>
-
-              {/* Content */}
-              <div className="p-6">
-                <h3 className="font-bold text-slate-900 text-lg mb-2 group-hover:text-teal-600 transition-colors" style={{ fontFamily: "var(--font-heading), sans-serif" }}>
-                  {course.title}
-                </h3>
-                <p className="text-sm text-slate-500 mb-4 line-clamp-2 leading-relaxed">
-                  {course.desc}
-                </p>
-
-                {/* Meta */}
-                <div className="grid grid-cols-2 gap-3 mb-5">
-                  <div className="flex items-center gap-2 text-xs text-slate-600">
-                    <MaterialIcon
-                      name="schedule"
-                      size={14}
-                      className="text-teal-500"
-                    />
-                    {course.duration}
-                  </div>
-                  <div className="flex items-center gap-2 text-xs text-slate-600">
-                    <MaterialIcon
-                      name="desktop_windows"
-                      size={14}
-                      className="text-teal-500"
-                    />
-                    {course.mode}
-                  </div>
-                  <div className="flex items-center gap-2 text-xs text-slate-600">
-                    <MaterialIcon
-                      name="workspace_premium"
-                      size={14}
-                      className="text-teal-500"
-                    />
-                    {course.certificate}
-                  </div>
-                  <div className="flex items-center gap-2 text-xs text-slate-600">
-                    <MaterialIcon
-                      name="person"
-                      size={14}
-                      className="text-teal-500"
-                    />
-                    {course.faculty}
-                  </div>
-                </div>
-
-                {/* Footer */}
-                <div className="flex items-center justify-between pt-4 border-t border-slate-100">
-                  <div>
-                    <p className="text-xs text-slate-400">Starting from</p>
-                    <p
-                      className="text-xl font-bold text-slate-900"
-                      style={{ fontFamily: "var(--font-heading), sans-serif" }}
-                    >
-                      {course.price}
-                    </p>
-                  </div>
-                  <div className="flex gap-2">
-                    <button className="px-4 py-2.5 text-xs font-semibold text-slate-600 border border-slate-200 rounded-xl hover:border-teal-300 hover:text-teal-600 transition-all">
-                      Details
-                    </button>
-                    <button className="px-4 py-2.5 text-xs font-semibold text-white bg-teal-600 rounded-xl hover:bg-teal-700 transition-all hover:shadow-teal flex items-center gap-1">
-                      Enroll
-                      <MaterialIcon name="arrow_forward" size={14} />
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </div>
+        <Stagger className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+          {courses.map((course) => (
+            <StaggerItem key={course.title}>
+              <CourseCard course={course} />
+            </StaggerItem>
           ))}
+        </Stagger>
+
+        <div className="mt-6 flex justify-center">
+          <Link
+            href="/courses"
+            className="btn-secondary group"
+          >
+            View all programs
+            <ArrowRight className="size-4 transition-transform group-hover:translate-x-0.5" />
+          </Link>
         </div>
       </div>
     </section>

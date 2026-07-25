@@ -1,40 +1,64 @@
-import MaterialIcon from "@/components/shared/MaterialIcon";
+"use client";
+
+import { motion } from "framer-motion";
+import {
+  Building2,
+  Globe2,
+  HeartPulse,
+  Hospital,
+  Medal,
+  Shield,
+} from "lucide-react";
 
 const partners = [
-  { icon: "shield", name: "CIBTAC" },
-  { icon: "military_tech", name: "CIDESCO" },
-  { icon: "apartment", name: "Apollo Hospitals" },
-  { icon: "favorite", name: "Medanta" },
-  { icon: "local_hospital", name: "Indian Medical Association" },
-  { icon: "language", name: "AAD Partner" },
+  { icon: Shield, name: "CIBTAC" },
+  { icon: Medal, name: "CIDESCO" },
+  { icon: Hospital, name: "Apollo Hospitals" },
+  { icon: HeartPulse, name: "Medanta" },
+  { icon: Building2, name: "IMA" },
+  { icon: Globe2, name: "AAD Partner" },
+  { icon: Shield, name: "CIBTAC Accredited" },
+  { icon: Medal, name: "CIDESCO Certified" },
 ];
 
 export default function TrustedBy() {
+  const loop = [...partners, ...partners];
+
   return (
-    <section className="py-12 border-y border-slate-100 bg-white">
-      <div className="container-max px-4 sm:px-6 lg:px-8">
-        <p className="text-center text-xs font-semibold tracking-widest text-slate-400 uppercase mb-8">
-          Trusted by Leading Medical Institutions & Associations
-        </p>
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-6">
-          {partners.map((p) => (
-            <div
-              key={p.name}
-              className="flex flex-col items-center gap-2 p-4 rounded-2xl hover:bg-slate-50 transition-all duration-300 hover:-translate-y-0.5 group"
-            >
-              <div className="w-12 h-12 rounded-2xl bg-slate-100 group-hover:bg-teal-50 flex items-center justify-center transition-colors">
-                <MaterialIcon
-                  name={p.icon}
-                  size={24}
-                  className="text-slate-400 group-hover:text-teal-600 transition-colors"
-                />
+    <section
+      className="relative overflow-hidden border-y border-slate-100 bg-white py-7 sm:py-8"
+      aria-label="Trusted institutions"
+    >
+      <p className="mb-6 text-center text-xs font-semibold uppercase tracking-[0.2em] text-slate-400">
+        Trusted by leading medical institutions
+      </p>
+
+      <div className="relative">
+        <div className="pointer-events-none absolute inset-y-0 left-0 z-10 w-16 bg-gradient-to-r from-white to-transparent sm:w-28" />
+        <div className="pointer-events-none absolute inset-y-0 right-0 z-10 w-16 bg-gradient-to-l from-white to-transparent sm:w-28" />
+
+        <motion.div
+          className="flex w-max gap-10"
+          animate={{ x: ["0%", "-50%"] }}
+          transition={{ duration: 32, ease: "linear", repeat: Infinity }}
+        >
+          {loop.map((p, i) => {
+            const Icon = p.icon;
+            return (
+              <div
+                key={`${p.name}-${i}`}
+                className="flex shrink-0 items-center gap-3 px-2"
+              >
+                <div className="flex size-11 items-center justify-center rounded-2xl bg-slate-50 text-slate-400 ring-1 ring-slate-100">
+                  <Icon className="size-5" aria-hidden />
+                </div>
+                <span className="whitespace-nowrap text-sm font-semibold text-slate-500">
+                  {p.name}
+                </span>
               </div>
-              <p className="text-xs font-semibold text-slate-500 group-hover:text-slate-700 transition-colors text-center">
-                {p.name}
-              </p>
-            </div>
-          ))}
-        </div>
+            );
+          })}
+        </motion.div>
       </div>
     </section>
   );

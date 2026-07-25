@@ -1,6 +1,81 @@
 import PageHeader from "@/components/shared/PageHeader";
 import MaterialIcon from "@/components/shared/MaterialIcon";
 import Link from "next/link";
+import Image from "next/image";
+import FadeIn from "@/components/motion/FadeIn";
+import AnimatedCounter from "@/components/motion/AnimatedCounter";
+import GradientText from "@/components/shared/GradientText";
+
+const stats = [
+  { value: 12000, suffix: "+", label: "Doctors & Surgeons Trained" },
+  { value: 45, suffix: "+", label: "Clinical Programs" },
+  { value: 80, suffix: "+", label: "Expert Faculty" },
+  { value: 24, suffix: "+", label: "Countries Reached" },
+];
+
+const values = [
+  {
+    icon: "health_and_safety",
+    title: "Patient Safety First",
+    desc: "Every protocol we teach prioritizes patient safety, informed consent, and ethical clinical practice above all else.",
+  },
+  {
+    icon: "menu_book",
+    title: "Evidence Over Trends",
+    desc: "We teach what the science supports — peer-reviewed techniques, not passing fads or unverified shortcuts.",
+  },
+  {
+    icon: "diversity_3",
+    title: "Mentorship Culture",
+    desc: "Small cohorts and 1:1 faculty access ensure every physician is guided, not just lectured to.",
+  },
+  {
+    icon: "public",
+    title: "Global Standards",
+    desc: "Curriculum benchmarked against CIBTAC, CIDESCO, and AAD so credentials travel with you worldwide.",
+  },
+  {
+    icon: "trending_up",
+    title: "Measurable Outcomes",
+    desc: "We measure success by our graduates' clinical confidence, patient results, and career growth.",
+  },
+  {
+    icon: "handshake",
+    title: "Lifelong Community",
+    desc: "Enrollment is the beginning of a lasting professional network, not a one-time transaction.",
+  },
+];
+
+const leadership = [
+  {
+    name: "Dr. Aisha Sharma",
+    role: "Program Director & Lead Dermatologist",
+    image:
+      "https://images.pexels.com/photos/5214958/pexels-photo-5214958.jpeg?auto=compress&cs=tinysrgb&w=400",
+    bio: "20+ years in aesthetic dermatology, board-certified, and lead architect of our fellowship curriculum.",
+  },
+  {
+    name: "Dr. Rajesh Kumar",
+    role: "Head of Clinical Training",
+    image:
+      "https://images.pexels.com/photos/6234600/pexels-photo-6234600.jpeg?auto=compress&cs=tinysrgb&w=400",
+    bio: "Specialist in injectables and energy-based devices, mentoring physicians through live-patient practice.",
+  },
+  {
+    name: "Dr. Priya Menon",
+    role: "Faculty — Advanced Injectables",
+    image:
+      "https://images.pexels.com/photos/5407206/pexels-photo-5407206.jpeg?auto=compress&cs=tinysrgb&w=400",
+    bio: "International trainer in dermal fillers and facial anatomy with a focus on vascular safety.",
+  },
+];
+
+const accreditations = [
+  { name: "CIBTAC", desc: "Confederation of International Beauty Therapy & Cosmetology" },
+  { name: "CIDESCO", desc: "Comité International d'Esthétique et de Cosmétologie" },
+  { name: "AAD", desc: "American Academy of Dermatology — Educational Partner" },
+  { name: "IMA", desc: "Indian Medical Association — Accredited Programs" },
+];
 
 const pillars = [
   {
@@ -42,6 +117,109 @@ export default function AboutPage() {
         subtitle="Empowering medical practitioners with world-class, hands-on aesthetic dermatology and clinical cosmetology education."
         breadcrumb="About Us"
       />
+
+      {/* Our Story */}
+      <section className="relative overflow-hidden bg-white px-4 py-8 sm:px-6 sm:py-10 lg:px-8 lg:py-12">
+        <div className="pointer-events-none absolute right-0 top-1/4 h-80 w-80 rounded-full bg-teal-200/25 blur-[110px]" />
+        <div className="pointer-events-none absolute -left-10 bottom-0 h-72 w-72 rounded-full bg-violet-200/20 blur-[100px]" />
+
+        <div className="container-max relative grid items-center gap-8 lg:grid-cols-2 lg:gap-10">
+          <FadeIn direction="right">
+            <div className="relative">
+              <div className="absolute -inset-3 rounded-[32px] bg-gradient-to-br from-teal-200/40 via-cyan-100/30 to-violet-200/30 blur-2xl" />
+              <div className="relative overflow-hidden rounded-[28px] shadow-[0_24px_64px_rgba(15,118,110,0.16)] ring-1 ring-white/60">
+                <div className="relative aspect-[4/5] sm:aspect-[5/4]">
+                  <Image
+                    src="https://images.pexels.com/photos/7088530/pexels-photo-7088530.jpeg?auto=compress&cs=tinysrgb&w=1000"
+                    alt="Faculty guiding doctors through hands-on clinical training"
+                    fill
+                    sizes="(max-width: 1024px) 100vw, 50vw"
+                    className="object-cover"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-teal-950/55 via-transparent to-transparent" />
+                </div>
+                <div className="absolute bottom-5 left-5 right-5 rounded-2xl border border-white/40 bg-white/85 p-4 shadow-glass backdrop-blur-xl sm:right-auto sm:max-w-xs">
+                  <p className="text-[10px] font-semibold uppercase tracking-widest text-teal-700">
+                    Since 2017
+                  </p>
+                  <p className="mt-1 text-sm font-bold text-slate-900">
+                    Built by dermatologists, for medical professionals
+                  </p>
+                </div>
+              </div>
+            </div>
+          </FadeIn>
+
+          <FadeIn delay={0.1}>
+            <div>
+              <span className="section-tag mb-4 inline-flex">Our Story</span>
+              <h2 className="section-title mb-4 mt-3">
+                Where clinical science meets{" "}
+                <GradientText>aesthetic mastery</GradientText>
+              </h2>
+              <p className="mb-3 text-base leading-relaxed text-slate-600">
+                Skinfinity Academy of Cosmetology was founded in 2017 with a
+                singular purpose: to close the gap between medical qualification
+                and confident, safe, real-world aesthetic practice. We saw
+                talented doctors held back by theory-heavy courses that never let
+                them touch a real patient.
+              </p>
+              <p className="mb-6 text-base leading-relaxed text-slate-600">
+                Today we are an international academy trusted by thousands of
+                physicians — blending an evidence-based curriculum, live-patient
+                clinical training, expert mentorship, and a lifetime learning
+                platform into one seamless journey from student to specialist.
+              </p>
+
+              <div className="grid gap-4 sm:grid-cols-2">
+                <div className="rounded-[22px] border border-slate-100 bg-slate-50/70 p-5">
+                  <div className="mb-3 flex size-11 items-center justify-center rounded-xl bg-teal-600 text-white">
+                    <MaterialIcon name="target" size={22} />
+                  </div>
+                  <h3 className="mb-1.5 text-base font-bold text-slate-900">
+                    Our Mission
+                  </h3>
+                  <p className="text-sm leading-relaxed text-slate-600">
+                    Equip every doctor with the clinical skill and confidence to
+                    deliver safe, world-class aesthetic care.
+                  </p>
+                </div>
+                <div className="rounded-[22px] border border-slate-100 bg-slate-50/70 p-5">
+                  <div className="mb-3 flex size-11 items-center justify-center rounded-xl bg-violet-500 text-white">
+                    <MaterialIcon name="visibility" size={22} />
+                  </div>
+                  <h3 className="mb-1.5 text-base font-bold text-slate-900">
+                    Our Vision
+                  </h3>
+                  <p className="text-sm leading-relaxed text-slate-600">
+                    To be the global benchmark for dermatology and aesthetic
+                    medicine education.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </FadeIn>
+        </div>
+      </section>
+
+      {/* By the Numbers */}
+      <section className="relative overflow-hidden border-y border-slate-200/60 bg-gradient-to-br from-teal-800 via-teal-700 to-violet-900 py-10 sm:py-12">
+        <div className="absolute inset-0 pattern-grid opacity-20" aria-hidden />
+        <div className="container-max relative px-4 sm:px-6 lg:px-8">
+          <div className="grid grid-cols-2 gap-8 lg:grid-cols-4">
+            {stats.map((s) => (
+              <FadeIn key={s.label} className="text-center">
+                <p className="text-4xl font-extrabold tracking-tight text-white sm:text-5xl">
+                  <AnimatedCounter value={s.value} suffix={s.suffix} />
+                </p>
+                <p className="mt-2 text-xs font-semibold uppercase tracking-wider text-teal-100">
+                  {s.label}
+                </p>
+              </FadeIn>
+            ))}
+          </div>
+        </div>
+      </section>
 
       {/* Hero Brand Statement Section (Inspired by Reference Design) */}
       {/* <section className="py-20 sm:py-28 relative overflow-hidden bg-white border-b border-slate-200">
@@ -126,9 +304,9 @@ export default function AboutPage() {
       </section> */}
 
       {/* Four Pillars Section */}
-      <section className="py-10 bg-slate-50 border-b border-slate-200/60">
+      <section className="py-8 sm:py-10 bg-slate-50 border-b border-slate-200/60">
         <div className="container-max px-4 sm:px-6 lg:px-8">
-          <div className="max-w-3xl mb-14">
+          <div className="max-w-3xl mb-6 sm:mb-8">
             <span className="text-xs font-bold uppercase tracking-widest text-teal-600 bg-teal-50 px-3.5 py-1.5 rounded-full border border-teal-100">
               Our Core Pillars
             </span>
@@ -167,9 +345,9 @@ export default function AboutPage() {
       </section>
 
       {/* Institutional Milestones Timeline */}
-      <section className="py-20 bg-white border-b border-slate-200">
+      <section className="py-8 sm:py-10 lg:py-12 bg-white border-b border-slate-200">
         <div className="container-max px-4 sm:px-6 lg:px-8">
-          <div className="text-center max-w-2xl mx-auto mb-16">
+          <div className="text-center max-w-2xl mx-auto mb-6 sm:mb-8">
             <span className="text-xs font-bold uppercase tracking-widest text-teal-600 bg-teal-50 px-3.5 py-1.5 rounded-full border border-teal-100">
               Institutional Journey
             </span>
@@ -181,7 +359,7 @@ export default function AboutPage() {
             </h2>
           </div>
 
-          <div className="max-w-3xl mx-auto space-y-6">
+          <div className="max-w-3xl mx-auto space-y-4">
             {milestones.map((m, i) => (
               <div key={i} className="flex gap-6 items-start">
                 <div className="w-20 flex-shrink-0 text-right">
@@ -192,7 +370,7 @@ export default function AboutPage() {
                     {m.year}
                   </span>
                 </div>
-                <div className="relative flex-1 pb-8 border-l-2 border-teal-200 pl-6">
+                <div className="relative flex-1 pb-5 border-l-2 border-teal-200 pl-6">
                   <div className="absolute left-[-9px] top-1.5 w-4 h-4 rounded-full bg-teal-600 border-4 border-white shadow-teal" />
                   <h4
                     className="text-base font-bold text-slate-900 mb-1"
@@ -210,8 +388,121 @@ export default function AboutPage() {
         </div>
       </section>
 
+      {/* Our Values */}
+      <section className="section-padding bg-slate-50 border-b border-slate-200/60">
+        <div className="container-max">
+          <div className="mx-auto mb-6 sm:mb-8 max-w-2xl text-center">
+            <span className="section-tag mb-2 inline-flex">What We Stand For</span>
+            <h2 className="section-title mt-2">
+              The values that guide{" "}
+              <GradientText>every program</GradientText>
+            </h2>
+          </div>
+
+          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            {values.map((v, i) => (
+              <FadeIn key={v.title} delay={i * 0.05}>
+                <div className="group h-full rounded-[24px] border border-slate-200/80 bg-white p-7 shadow-soft transition-all duration-300 hover:-translate-y-1 hover:shadow-card-hover">
+                  <div className="mb-5 flex h-14 w-14 items-center justify-center rounded-2xl bg-teal-50 text-teal-600 transition-all group-hover:bg-teal-600 group-hover:text-white">
+                    <MaterialIcon name={v.icon} size={26} />
+                  </div>
+                  <h3 className="mb-2 text-lg font-bold text-slate-900">
+                    {v.title}
+                  </h3>
+                  <p className="text-sm leading-relaxed text-slate-600">
+                    {v.desc}
+                  </p>
+                </div>
+              </FadeIn>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Leadership & Faculty */}
+      <section className="section-padding bg-white border-b border-slate-200">
+        <div className="container-max">
+          <div className="mx-auto mb-6 sm:mb-8 max-w-2xl text-center">
+            <span className="section-tag mb-2 inline-flex">Leadership & Faculty</span>
+            <h2 className="section-title mt-2">
+              Learn from{" "}
+              <GradientText>practicing specialists</GradientText>
+            </h2>
+            <p className="section-subtitle mx-auto mt-2">
+              Our faculty are board-certified clinicians who treat patients every
+              week — not just teach from slides.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            {leadership.map((person, i) => (
+              <FadeIn key={person.name} delay={i * 0.08}>
+                <article className="group h-full overflow-hidden rounded-[24px] border border-slate-200/80 bg-white shadow-soft transition-all duration-300 hover:-translate-y-1.5 hover:shadow-card-hover">
+                  <div className="relative aspect-[4/3] overflow-hidden">
+                    <Image
+                      src={person.image}
+                      alt={person.name}
+                      fill
+                      sizes="(max-width: 1024px) 100vw, 33vw"
+                      className="object-cover transition-transform duration-700 group-hover:scale-105"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-slate-900/50 to-transparent" />
+                  </div>
+                  <div className="p-6">
+                    <h3 className="text-lg font-bold text-slate-900">
+                      {person.name}
+                    </h3>
+                    <p className="mb-3 text-xs font-semibold uppercase tracking-wider text-teal-600">
+                      {person.role}
+                    </p>
+                    <p className="text-sm leading-relaxed text-slate-600">
+                      {person.bio}
+                    </p>
+                  </div>
+                </article>
+              </FadeIn>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Accreditations */}
+      <section className="section-padding bg-slate-50 border-b border-slate-200/60">
+        <div className="container-max">
+          <div className="mx-auto mb-6 sm:mb-8 max-w-2xl text-center">
+            <span className="section-tag mb-2 inline-flex">Accreditations</span>
+            <h2 className="section-title mt-2">
+              Globally recognized{" "}
+              <GradientText>credentials</GradientText>
+            </h2>
+            <p className="section-subtitle mx-auto mt-2">
+              Our programs are aligned with the leading international bodies in
+              dermatology and cosmetology education.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
+            {accreditations.map((a, i) => (
+              <FadeIn key={a.name} delay={i * 0.06}>
+                <div className="group flex h-full flex-col items-center rounded-[24px] border border-slate-200/80 bg-white p-7 text-center shadow-soft transition-all duration-300 hover:-translate-y-1 hover:shadow-card-hover">
+                  <div className="mb-4 flex size-16 items-center justify-center rounded-2xl bg-gradient-to-br from-teal-500 to-teal-700 text-white shadow-teal">
+                    <MaterialIcon name="verified" size={30} />
+                  </div>
+                  <h3 className="text-xl font-extrabold text-slate-900">
+                    {a.name}
+                  </h3>
+                  <p className="mt-2 text-xs leading-relaxed text-slate-600">
+                    {a.desc}
+                  </p>
+                </div>
+              </FadeIn>
+            ))}
+          </div>
+        </div>
+      </section>
+
       {/* CTA Section */}
-      <section className="py-16 bg-slate-50">
+      <section className="py-8 sm:py-10 bg-slate-50">
         <div className="container-max px-4 sm:px-6 lg:px-8">
           <div className="bg-slate-900 rounded-3xl p-8 sm:p-12 text-white border border-slate-800 shadow-2xl flex flex-col md:flex-row items-center justify-between gap-8">
             <div className="max-w-2xl">

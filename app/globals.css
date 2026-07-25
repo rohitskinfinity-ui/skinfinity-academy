@@ -42,14 +42,18 @@
   --color-card-foreground: var(--card-foreground);
   --color-card: var(--card);
 
-  /* Radius */
+  /* Radius — premium rounded (20–28px) */
   --radius-sm: calc(var(--radius) * 0.6);
   --radius-md: calc(var(--radius) * 0.8);
   --radius-lg: var(--radius);
   --radius-xl: calc(var(--radius) * 1.4);
-  --radius-2xl: calc(var(--radius) * 1.8);
-  --radius-3xl: calc(var(--radius) * 2.2);
-  --radius-4xl: calc(var(--radius) * 2.6);
+  --radius-2xl: 1.25rem;
+  --radius-3xl: 1.5rem;
+  --radius-4xl: 1.75rem;
+
+  --color-violet-500: #8b5cf6;
+  --color-violet-600: #7c3aed;
+  --color-surface: #f8fafc;
 
   /* === Brand Teal Palette === */
   --color-teal-50: #f0fdfa;
@@ -145,30 +149,30 @@
 }
 
 :root {
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.145 0 0);
+  --background: #f8fafc;
+  --foreground: #0f172a;
   --card: oklch(1 0 0);
-  --card-foreground: oklch(0.145 0 0);
+  --card-foreground: #0f172a;
   --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.145 0 0);
-  --primary: #0d9488;
+  --popover-foreground: #0f172a;
+  --primary: #0f766e;
   --primary-foreground: #ffffff;
-  --secondary: oklch(0.97 0 0);
-  --secondary-foreground: oklch(0.205 0 0);
+  --secondary: #14b8a6;
+  --secondary-foreground: #042f2e;
   --muted: oklch(0.97 0 0);
   --muted-foreground: oklch(0.556 0 0);
-  --accent: oklch(0.97 0 0);
-  --accent-foreground: oklch(0.205 0 0);
+  --accent: #8b5cf6;
+  --accent-foreground: #ffffff;
   --destructive: oklch(0.577 0.245 27.325);
   --border: oklch(0.922 0 0);
   --input: oklch(0.922 0 0);
-  --ring: #0d9488;
+  --ring: #0f766e;
   --chart-1: oklch(0.87 0 0);
   --chart-2: oklch(0.556 0 0);
   --chart-3: oklch(0.439 0 0);
   --chart-4: oklch(0.371 0 0);
   --chart-5: oklch(0.269 0 0);
-  --radius: 0.625rem;
+  --radius: 1.25rem;
   --sidebar: oklch(0.985 0 0);
   --sidebar-foreground: oklch(0.145 0 0);
   --sidebar-primary: #0d9488;
@@ -235,7 +239,7 @@
 @layer components {
   /* Layout */
   .section-padding {
-    @apply py-20 px-4 sm:px-6 lg:px-8;
+    @apply py-8 sm:py-10 lg:py-12 px-4 sm:px-6 lg:px-8;
   }
   .container-max {
     @apply max-w-7xl mx-auto;
@@ -243,7 +247,7 @@
 
   /* Buttons */
   .btn-primary {
-    @apply inline-flex items-center gap-2 px-7 py-3.5 bg-teal-600 hover:bg-teal-700 text-white font-semibold rounded-2xl transition-all duration-300 hover:shadow-teal hover:-translate-y-0.5 active:translate-y-0 text-sm;
+    @apply inline-flex items-center gap-2 px-7 py-3.5 bg-teal-700 hover:bg-teal-800 text-white font-semibold rounded-2xl transition-all duration-300 hover:shadow-teal hover:-translate-y-0.5 active:translate-y-0 text-sm;
   }
   .btn-secondary {
     @apply inline-flex items-center gap-2 px-7 py-3.5 bg-white hover:bg-slate-50 text-slate-800 font-semibold rounded-2xl border border-slate-200 hover:border-teal-300 transition-all duration-300 hover:shadow-card hover:-translate-y-0.5 active:translate-y-0 text-sm;
@@ -309,7 +313,51 @@
 
   /* Gradient Text */
   .gradient-text {
-    @apply bg-gradient-to-r from-teal-600 to-teal-400 bg-clip-text text-transparent;
+    @apply bg-gradient-to-r from-teal-700 via-teal-500 to-violet-500 bg-clip-text text-transparent;
+  }
+
+  .gradient-border {
+    position: relative;
+    background: white;
+    border-radius: 1.5rem;
+  }
+  .gradient-border::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    padding: 1px;
+    border-radius: inherit;
+    background: linear-gradient(135deg, #0f766e, #14b8a6, #8b5cf6);
+    -webkit-mask:
+      linear-gradient(#fff 0 0) content-box,
+      linear-gradient(#fff 0 0);
+    mask:
+      linear-gradient(#fff 0 0) content-box,
+      linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    pointer-events: none;
+    opacity: 0.55;
+    transition: opacity 0.3s ease;
+  }
+  .gradient-border:hover::before {
+    opacity: 1;
+  }
+
+  .btn-ripple {
+    position: relative;
+    overflow: hidden;
+  }
+  .btn-ripple::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(circle at var(--x, 50%) var(--y, 50%), rgba(255,255,255,0.35), transparent 40%);
+    opacity: 0;
+    transition: opacity 0.4s ease;
+  }
+  .btn-ripple:active::after {
+    opacity: 1;
   }
 
   /* Background Patterns */
