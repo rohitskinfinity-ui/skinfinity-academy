@@ -16,7 +16,6 @@ import {
 } from "lucide-react";
 import { Stagger, StaggerItem } from "@/components/motion/Stagger";
 import SectionHeader from "@/components/shared/SectionHeader";
-import GradientText from "@/components/shared/GradientText";
 import { cn } from "@/lib/utils";
 
 const faqs = [
@@ -72,7 +71,8 @@ export default function FAQ() {
           tag="FAQ"
           title={
             <>
-              Questions? <GradientText>We have answers</GradientText>
+              Questions?{" "}
+              <span className="text-teal-700">We have answers</span>
             </>
           }
           subtitle="Everything you need to know about our programs, enrollment, and certifications."

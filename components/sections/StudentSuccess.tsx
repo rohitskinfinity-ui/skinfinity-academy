@@ -4,8 +4,6 @@ import Image from "next/image";
 import { Building2, Play, Quote, Star } from "lucide-react";
 import { Stagger, StaggerItem } from "@/components/motion/Stagger";
 import SectionHeader from "@/components/shared/SectionHeader";
-import GradientText from "@/components/shared/GradientText";
-
 const testimonials = [
   {
     name: "Dr. Sneha Patel",
@@ -52,22 +50,26 @@ export default function StudentSuccess() {
           tag="Testimonials"
           title={
             <>
-              Real doctors. <GradientText>Real results.</GradientText>
+              Real doctors.{" "}
+              <span className="text-teal-700">Real results.</span>
             </>
           }
           subtitle="Hear from healthcare professionals who transformed their careers with Skinfinity Academy."
         />
 
-        <Stagger className="grid gap-6 lg:grid-cols-3">
+        <Stagger className="-mx-4 flex snap-x snap-mandatory gap-4 overflow-x-auto px-4 py-2 scrollbar-hide sm:mx-0 sm:grid sm:snap-none sm:grid-cols-2 sm:gap-6 sm:overflow-x-visible sm:px-0 sm:py-0 lg:grid-cols-3">
           {testimonials.map((t) => (
-            <StaggerItem key={t.name}>
+            <StaggerItem
+              key={t.name}
+              className="w-[82vw] max-w-[340px] shrink-0 snap-start sm:w-auto sm:max-w-none"
+            >
               <article className="group relative flex h-full flex-col overflow-hidden rounded-[24px] border border-white/60 bg-white/70 p-6 shadow-[0_8px_32px_rgba(15,23,42,0.06)] backdrop-blur-xl transition-all duration-300 hover:-translate-y-1.5 hover:shadow-[0_20px_48px_rgba(15,118,110,0.12)]">
                 <div className="relative mb-5 aspect-[16/10] overflow-hidden rounded-2xl">
                   <Image
                     src={t.image}
                     alt={t.name}
                     fill
-                    sizes="(max-width: 1024px) 100vw, 33vw"
+                    sizes="(max-width: 640px) 82vw, (max-width: 1024px) 50vw, 33vw"
                     className="object-cover transition-transform duration-700 group-hover:scale-105"
                   />
                   <div className="absolute inset-0 bg-slate-900/35" />
@@ -119,6 +121,10 @@ export default function StudentSuccess() {
             </StaggerItem>
           ))}
         </Stagger>
+
+        <p className="mt-3 text-center text-xs font-medium text-slate-400 sm:hidden">
+          Swipe to read more stories →
+        </p>
       </div>
     </section>
   );

@@ -10,8 +10,6 @@ import {
 import FadeIn from "@/components/motion/FadeIn";
 import { Stagger, StaggerItem } from "@/components/motion/Stagger";
 import SectionHeader from "@/components/shared/SectionHeader";
-import GradientText from "@/components/shared/GradientText";
-
 const certifications = [
   {
     name: "CIBTAC",
@@ -46,7 +44,7 @@ export default function Certifications() {
           title={
             <>
               Globally recognized{" "}
-              <GradientText>credentials</GradientText>
+              <span className="text-teal-700">credentials</span>
             </>
           }
           subtitle="Our certificates are accredited by international bodies and verifiable online."

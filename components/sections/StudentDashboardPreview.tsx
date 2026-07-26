@@ -19,8 +19,6 @@ import {
 } from "recharts";
 import FadeIn from "@/components/motion/FadeIn";
 import SectionHeader from "@/components/shared/SectionHeader";
-import GradientText from "@/components/shared/GradientText";
-
 const chartData = [
   { week: "W1", hours: 4 },
   { week: "W2", hours: 7 },
@@ -60,7 +58,7 @@ export default function StudentDashboardPreview() {
           title={
             <>
               Your personalized{" "}
-              <GradientText>learning hub</GradientText>
+              <span className="text-teal-700">learning hub</span>
             </>
           }
           subtitle="Track progress, manage schedules, and celebrate achievements — all in one place."

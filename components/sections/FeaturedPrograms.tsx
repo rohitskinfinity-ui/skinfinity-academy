@@ -5,8 +5,6 @@ import { ArrowRight } from "lucide-react";
 import CourseCard, { type CourseCardData } from "@/components/shared/CourseCard";
 import { Stagger, StaggerItem } from "@/components/motion/Stagger";
 import SectionHeader from "@/components/shared/SectionHeader";
-import GradientText from "@/components/shared/GradientText";
-
 const courses: CourseCardData[] = [
   {
     title: "Fellowship in Aesthetic Dermatology",
@@ -113,7 +111,7 @@ export default function FeaturedPrograms() {
           title={
             <>
               Curated courses for{" "}
-              <GradientText>medical excellence</GradientText>
+              <span className="text-teal-700">medical excellence</span>
             </>
           }
           subtitle="Explore flagship programs designed by leading dermatologists and aesthetic medicine experts."

@@ -10,8 +10,6 @@ import {
 import AnimatedCounter from "@/components/motion/AnimatedCounter";
 import { Stagger, StaggerItem } from "@/components/motion/Stagger";
 import SectionHeader from "@/components/shared/SectionHeader";
-import GradientText from "@/components/shared/GradientText";
-
 const stats = [
   {
     icon: Users,
@@ -61,7 +59,7 @@ export default function Stats() {
           title={
             <>
               Numbers that reflect{" "}
-              <GradientText>clinical trust</GradientText>
+              <span className="text-teal-700">clinical trust</span>
             </>
           }
           subtitle="A growing network of medical professionals advancing aesthetic dermatology with Skinfinity."

@@ -72,25 +72,32 @@ export default function AboutAcademy() {
         <div className="grid gap-6 lg:grid-cols-12 lg:gap-5">
           {/* Image column — tall editorial frame */}
           <FadeIn direction="right" className="lg:col-span-5">
-            <figure className="relative h-full min-h-[420px] overflow-hidden rounded-[28px] bg-teal-950 sm:min-h-[480px]">
+            <figure className="relative aspect-[4/5] overflow-hidden rounded-[24px] bg-teal-950 sm:aspect-auto sm:min-h-[480px] sm:rounded-[28px] lg:h-full">
               <Image
                 src="https://images.pexels.com/photos/4173251/pexels-photo-4173251.jpeg?auto=compress&cs=tinysrgb&w=1000"
                 alt="Clinical training at Skinfinity Academy of Cosmetology"
                 fill
                 sizes="(max-width: 1024px) 100vw, 42vw"
-                className="object-cover"
+                className="object-cover object-[center_20%] sm:object-center"
+                priority={false}
               />
-              {/* Soft teal wash at bottom for caption readability */}
-              <div className="absolute inset-x-0 bottom-0 h-1/4 bg-teal-950/75" />
+              {/* Solid teal wash — taller on mobile so caption stays readable */}
+              <div
+                className="absolute inset-x-0 bottom-0 h-[27%] bg-teal-950/80 sm:h-[24%] sm:bg-teal-950/75"
+                aria-hidden
+              />
 
-              <figcaption className="absolute inset-x-0 bottom-0 p-6 sm:p-7">
-                <p className="mb-2 inline-flex rounded-full bg-teal-500 px-3 py-1.5 text-xs font-extrabold uppercase tracking-[0.2em] text-white shadow-lg">
+              <figcaption className="absolute inset-x-0 bottom-0 p-4 sm:p-7">
+                <p className="mb-2 inline-flex rounded-full bg-teal-600 px-2.5 py-1 text-[10px] font-extrabold uppercase tracking-[0.18em] text-white shadow-md sm:mb-2.5 sm:px-3 sm:py-1.5 sm:text-xs sm:tracking-[0.2em]">
                   Est. 2017
                 </p>
-                <p className="max-w-xs text-lg font-bold leading-snug text-white sm:text-xl">
+                <p
+                  className="max-w-xs text-base font-bold leading-snug text-white sm:text-xl"
+                  style={{ fontFamily: "var(--font-heading), sans-serif" }}
+                >
                   Premium dermatology education for medical professionals
                 </p>
-                <p className="mt-2 max-w-sm text-sm leading-relaxed text-teal-50/80">
+                <p className="mt-1.5 max-w-sm text-xs leading-relaxed text-white/85 sm:mt-2 sm:text-sm">
                   From fellowships to workshops — science-led, hands-on, and
                   globally accredited.
                 </p>
