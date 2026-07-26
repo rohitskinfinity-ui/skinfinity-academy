@@ -51,12 +51,12 @@ export default function HomePage() {
       <FeaturedPrograms />
       <WhyChooseUs />
       <LearningJourney />
-      <StudentDashboardPreview />
+      {/* <StudentDashboardPreview /> */}
       <StudentSuccess />
-      <Certifications />
+      {/* <Certifications /> */}
       <Blog />
       <FAQ />
-      <CTA />
+      {/* <CTA /> */}
     </>
   );
 }
