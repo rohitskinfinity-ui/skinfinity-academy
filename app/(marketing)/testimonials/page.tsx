@@ -33,7 +33,7 @@ const videoReviews = [
     course: "PG Diploma in Clinical Cosmetology",
     location: "Bengaluru, India",
     thumbnail: "https://images.unsplash.com/photo-1594824813570-78988072613d?auto=format&fit=crop&w=800&q=80",
-    quote: "Skinfinity gave me full confidence to open my own aesthetic clinic in Indiranagar. The CIDESCO certification is internationally recognized.",
+    quote: "Skinfinity gave me full confidence to open my own aesthetic clinic in Indiranagar. The IEB & DMHCA affiliated certification is internationally recognized.",
     duration: "4:05",
   },
 ];

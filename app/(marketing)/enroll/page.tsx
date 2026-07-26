@@ -731,7 +731,7 @@ export default function EnrollPage() {
                     {
                       icon: "workspace_premium",
                       title: "Certification",
-                      desc: "CIBTAC & CIDESCO aligned credentials",
+                      desc: "IEB & DMHCA affiliated credentials",
                     },
                     {
                       icon: "school",

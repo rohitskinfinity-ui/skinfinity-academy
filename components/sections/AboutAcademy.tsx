@@ -26,7 +26,7 @@ const principles = [
   {
     icon: Microscope,
     title: "Clinical Rigor",
-    desc: "CIBTAC, CIDESCO & international protocols",
+    desc: "IEB & DMHCA affiliated international protocols",
   },
   {
     icon: HeartHandshake,

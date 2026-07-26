@@ -11,14 +11,14 @@ import {
 } from "lucide-react";
 
 const partners = [
-  { icon: Shield, name: "CIBTAC" },
-  { icon: Medal, name: "CIDESCO" },
+  { icon: Shield, name: "IEB" },
+  { icon: Medal, name: "DMHCA" },
   { icon: Hospital, name: "Apollo Hospitals" },
   { icon: HeartPulse, name: "Medanta" },
-  { icon: Building2, name: "IMA" },
-  { icon: Globe2, name: "AAD Partner" },
-  { icon: Shield, name: "CIBTAC Accredited" },
-  { icon: Medal, name: "CIDESCO Certified" },
+  { icon: Building2, name: "International Education Board" },
+  { icon: Globe2, name: "New Delhi Medical Healthcare" },
+  { icon: Shield, name: "IEB Affiliated" },
+  { icon: Medal, name: "DMHCA Partner" },
 ];
 
 export default function TrustedBy() {

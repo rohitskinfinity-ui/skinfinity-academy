@@ -30,7 +30,7 @@ const courses: CourseCardData[] = [
       "https://images.pexels.com/photos/4173251/pexels-photo-4173251.jpeg?auto=compress&cs=tinysrgb&w=800",
     duration: "3 Months",
     lessons: 32,
-    certificate: "CIBTAC Certificate",
+    certificate: "IEB & DMHCA Certificate",
     faculty: "Dr. Rajesh Kumar",
     facultyAvatar:
       "https://images.pexels.com/photos/6234600/pexels-photo-6234600.jpeg?auto=compress&cs=tinysrgb&w=200",

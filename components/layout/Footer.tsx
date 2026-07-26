@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { BadgeCheck, Mail, MapPin, Phone } from "lucide-react";
+import { Mail, MapPin, Phone } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
@@ -92,7 +92,20 @@ const socials = [
   { name: "YouTube", label: "YouTube", href: "#" },
 ];
 
-const badges = ["CIBTAC", "CIDESCO", "IMA", "AAD Partner"];
+const affiliationLogos = [
+  {
+    src: "/ieb-logo.avif",
+    alt: "International Education Board (IEB)",
+    width: 72,
+    height: 72,
+  },
+  {
+    src: "/dmhca-logo.png",
+    alt: "DMHCA — Unit of New Delhi Medical Healthcare Pvt. Ltd.",
+    width: 72,
+    height: 72,
+  },
+];
 
 export default function Footer() {
   const [email, setEmail] = useState("");
@@ -172,15 +185,20 @@ export default function Footer() {
               International-quality dermatology education empowering healthcare
               professionals worldwide through clinical excellence.
             </p>
-            <div className="mb-5 flex flex-wrap gap-2">
-              {badges.map((b) => (
-                <span
-                  key={b}
-                  className="inline-flex items-center gap-1 rounded-full bg-slate-900 px-2.5 py-1 text-[10px] font-semibold text-teal-300 ring-1 ring-slate-800"
+            <div className="mb-5 flex flex-wrap items-center gap-3">
+              {affiliationLogos.map((logo) => (
+                <div
+                  key={logo.src}
+                  className="flex size-13 items-center justify-center overflow-hidden rounded-[50%] bg-white"
                 >
-                  <BadgeCheck className="size-3" aria-hidden />
-                  {b}
-                </span>
+                  <Image
+                    src={logo.src}
+                    alt={logo.alt}
+                    width={logo.width}
+                    height={logo.height}
+                    className="size-full object-contain"
+                  />
+                </div>
               ))}
             </div>
             <div className="flex gap-2">

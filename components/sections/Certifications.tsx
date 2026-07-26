@@ -12,24 +12,14 @@ import { Stagger, StaggerItem } from "@/components/motion/Stagger";
 import SectionHeader from "@/components/shared/SectionHeader";
 const certifications = [
   {
-    name: "CIBTAC",
-    desc: "Confederation of International Beauty Therapy & Cosmetology",
+    name: "IEB",
+    desc: "International Education Board — Affiliated certification authority",
     color: "from-teal-500 to-teal-700",
   },
   {
-    name: "CIDESCO",
-    desc: "Comité International d'Esthétique et de Cosmétologie",
+    name: "DMHCA",
+    desc: "Unit of New Delhi Medical Healthcare Pvt. Ltd. — Clinical education partner",
     color: "from-cyan-500 to-cyan-700",
-  },
-  {
-    name: "AAD",
-    desc: "American Academy of Dermatology — Educational Partner",
-    color: "from-emerald-500 to-emerald-700",
-  },
-  {
-    name: "IMA",
-    desc: "Indian Medical Association — Accredited Programs",
-    color: "from-violet-500 to-violet-700",
   },
 ];
 
@@ -47,7 +37,7 @@ export default function Certifications() {
               <span className="text-teal-700">credentials</span>
             </>
           }
-          subtitle="Our certificates are accredited by international bodies and verifiable online."
+          subtitle="Our certificates are affiliated with International Education Board (IEB) and DMHCA, and verifiable online."
         />
 
         <div className="grid gap-6 lg:grid-cols-2">
@@ -80,7 +70,9 @@ export default function Certifications() {
                   <p className="text-lg font-bold text-slate-900">Dr. Arjun Reddy</p>
                   <p className="mx-auto mt-2 max-w-sm text-xs leading-relaxed text-slate-500">
                     has successfully completed all requirements including clinical
-                    assessments, case studies, and examinations.
+                    assessments, case studies, and examinations. Affiliated with
+                    International Education Board (IEB) and DMHCA (Unit of New
+                    Delhi Medical Healthcare Pvt. Ltd.).
                   </p>
                 </div>
 

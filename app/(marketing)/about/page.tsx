@@ -34,7 +34,7 @@ const values = [
   {
     icon: "public",
     title: "Global Standards",
-    desc: "Curriculum benchmarked against CIBTAC, CIDESCO, and AAD so credentials travel with you worldwide.",
+    desc: "Curriculum benchmarked with International Education Board (IEB) and DMHCA so credentials travel with you worldwide.",
   },
   {
     icon: "trending_up",
@@ -73,10 +73,14 @@ const leadership = [
 ];
 
 const accreditations = [
-  { name: "CIBTAC", desc: "Confederation of International Beauty Therapy & Cosmetology" },
-  { name: "CIDESCO", desc: "Comité International d'Esthétique et de Cosmétologie" },
-  { name: "AAD", desc: "American Academy of Dermatology — Educational Partner" },
-  { name: "IMA", desc: "Indian Medical Association — Accredited Programs" },
+  {
+    name: "IEB",
+    desc: "International Education Board — Affiliated certification authority",
+  },
+  {
+    name: "DMHCA",
+    desc: "Unit of New Delhi Medical Healthcare Pvt. Ltd. — Clinical education partner",
+  },
 ];
 
 const pillars = [
@@ -92,8 +96,8 @@ const pillars = [
   },
   {
     icon: "verified_user",
-    title: "CIDESCO & CIBTAC Aligned",
-    desc: "Globally recognized clinical certification standard allowing doctors to practice internationally with confidence.",
+    title: "IEB & DMHCA Affiliated",
+    desc: "Globally recognized clinical certification through International Education Board (IEB) and DMHCA (Unit of New Delhi Medical Healthcare Pvt. Ltd.).",
   },
   {
     icon: "support_agent",
@@ -106,7 +110,7 @@ const milestones = [
   { year: "2017", title: "Academy Established", desc: "Founded with a vision to revolutionize hands-on clinical cosmetology education." },
   { year: "2019", title: "First Fellowship Batch", desc: "Graduated our first cohort of 150+ board-certified dermatologists and MBBS doctors." },
   { year: "2021", title: "Digital LMS Launch", desc: "Launched 24/7 procedural video portal & interactive clinical case library." },
-  { year: "2023", title: "International Accreditations", desc: "Awarded CIDESCO & CIBTAC global accreditation standards." },
+  { year: "2023", title: "International Affiliations", desc: "Affiliated with International Education Board (IEB) and DMHCA (Unit of New Delhi Medical Healthcare Pvt. Ltd.)." },
   { year: "2025", title: "12,000+ Alumni Network", desc: "Empowered 12,000+ doctors across 24+ countries worldwide." },
 ];
 

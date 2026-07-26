@@ -181,7 +181,7 @@ const courseFaqs: AccordionItem[] = [
   {
     title: "Is the certificate recognised and verifiable?",
     content:
-      "Yes. On successful completion and assessment you receive a Skinfinity Board Certified fellowship certificate with a unique QR verification code that employers and institutions can validate online. Our programmes are aligned with CIBTAC and CIDESCO standards.",
+      "Yes. On successful completion and assessment you receive a Skinfinity Board Certified fellowship certificate with a unique QR verification code that employers and institutions can validate online. Our programmes are affiliated with International Education Board (IEB) and DMHCA (Unit of New Delhi Medical Healthcare Pvt. Ltd.).",
   },
   {
     title: "Can I pay the fee in instalments?",

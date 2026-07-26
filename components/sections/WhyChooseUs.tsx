@@ -26,7 +26,7 @@ const features = [
   {
     icon: Globe2,
     title: "International Curriculum",
-    desc: "Curriculum aligned with global standards including CIBTAC, CIDESCO, and AAD guidelines.",
+    desc: "Curriculum aligned with International Education Board (IEB) and DMHCA (Unit of New Delhi Medical Healthcare Pvt. Ltd.).",
   },
   {
     icon: HandHeart,

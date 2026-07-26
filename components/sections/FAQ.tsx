@@ -27,7 +27,7 @@ const faqs = [
   {
     icon: BadgeCheck,
     q: "Are the certificates internationally recognized?",
-    a: "Yes. Our programs are accredited by CIBTAC, CIDESCO, and aligned with AAD guidelines. Certificates include a QR verification code and can be verified online by employers and institutions worldwide.",
+    a: "Yes. Our programs are affiliated with International Education Board (IEB) and DMHCA (Unit of New Delhi Medical Healthcare Pvt. Ltd.). Certificates include a QR verification code and can be verified online by employers and institutions worldwide.",
   },
   {
     icon: Laptop,
