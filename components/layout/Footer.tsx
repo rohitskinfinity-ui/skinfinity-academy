@@ -81,7 +81,7 @@ const footerLinks = {
 const contactInfo = [
   { icon: Mail, text: "support@skinfinityacademy.com", href: "mailto:support@skinfinityacademy.com" },
   { icon: Phone, text: "+91 98765 43210", href: "tel:+919876543210" },
-  { icon: MapPin, text: "MG Road, Bengaluru, India", href: "#" },
+  { icon: MapPin, text: "Plot No. B-1, B Block, Sector 36, Noida, Uttar Pradesh 201303", href: "#" },
 ];
 
 const socials = [
