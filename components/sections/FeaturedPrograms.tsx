@@ -119,13 +119,22 @@ export default function FeaturedPrograms() {
           subtitle="Explore flagship programs designed by leading dermatologists and aesthetic medicine experts."
         />
 
-        <Stagger className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+        {/* Horizontal snap-scroll on mobile, grid from `sm` up */}
+        <Stagger className="-mx-4 flex snap-x snap-mandatory gap-4 overflow-x-auto px-4 py-2 scrollbar-hide sm:mx-0 sm:grid sm:snap-none sm:grid-cols-2 sm:gap-6 sm:overflow-x-visible sm:px-0 sm:py-0 lg:grid-cols-3">
           {courses.map((course) => (
-            <StaggerItem key={course.title}>
-              <CourseCard course={course} />
+            <StaggerItem
+              key={course.title}
+              className="w-[80vw] max-w-[320px] shrink-0 snap-start sm:w-auto sm:max-w-none"
+            >
+              <CourseCard course={course} className="h-full" />
             </StaggerItem>
           ))}
         </Stagger>
+
+        <p className="mt-3 flex items-center justify-center gap-1.5 text-xs font-medium text-slate-400 sm:hidden">
+          <ArrowRight className="size-3.5" aria-hidden />
+          Swipe to explore more programs
+        </p>
 
         <div className="mt-6 flex justify-center">
           <Link
