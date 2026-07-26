@@ -1,9 +1,10 @@
 "use client";
 
 import Image from "next/image";
-import { Building2, Play, Quote, Star } from "lucide-react";
+import { Building2, Quote, Star } from "lucide-react";
 import { Stagger, StaggerItem } from "@/components/motion/Stagger";
 import SectionHeader from "@/components/shared/SectionHeader";
+
 const testimonials = [
   {
     name: "Dr. Sneha Patel",
@@ -41,10 +42,8 @@ export default function StudentSuccess() {
   return (
     <section
       id="success"
-      className="section-padding relative overflow-hidden bg-gradient-to-b from-[#F8FAFC] to-white"
+      className="section-padding relative overflow-hidden bg-[#F8FAFC]"
     >
-      <div className="pointer-events-none absolute left-1/2 top-0 h-[300px] w-[500px] -translate-x-1/2 rounded-full bg-teal-200/25 blur-[120px]" />
-
       <div className="container-max relative">
         <SectionHeader
           tag="Testimonials"
@@ -63,28 +62,11 @@ export default function StudentSuccess() {
               key={t.name}
               className="w-[82vw] max-w-[340px] shrink-0 snap-start sm:w-auto sm:max-w-none"
             >
-              <article className="group relative flex h-full flex-col overflow-hidden rounded-[24px] border border-white/60 bg-white/70 p-6 shadow-[0_8px_32px_rgba(15,23,42,0.06)] backdrop-blur-xl transition-all duration-300 hover:-translate-y-1.5 hover:shadow-[0_20px_48px_rgba(15,118,110,0.12)]">
-                <div className="relative mb-5 aspect-[16/10] overflow-hidden rounded-2xl">
-                  <Image
-                    src={t.image}
-                    alt={t.name}
-                    fill
-                    sizes="(max-width: 640px) 82vw, (max-width: 1024px) 50vw, 33vw"
-                    className="object-cover transition-transform duration-700 group-hover:scale-105"
-                  />
-                  <div className="absolute inset-0 bg-slate-900/35" />
-                  <button
-                    type="button"
-                    className="absolute inset-0 flex items-center justify-center"
-                    aria-label={`Play video testimonial from ${t.name}`}
-                  >
-                    <span className="flex size-14 items-center justify-center rounded-full bg-white/20 text-white shadow-lg backdrop-blur-md ring-1 ring-white/40 transition-transform group-hover:scale-110">
-                      <Play className="size-5 fill-current" />
-                    </span>
-                  </button>
-                </div>
-
-                <div className="mb-3 flex items-center gap-1" aria-label={`${t.rating} out of 5 stars`}>
+              <article className="group relative flex h-full flex-col overflow-hidden rounded-[24px] border border-slate-200/80 bg-white p-6 shadow-[0_8px_32px_rgba(15,23,42,0.06)] transition-all duration-300 hover:-translate-y-1.5 hover:border-teal-200 hover:shadow-[0_20px_48px_rgba(15,118,110,0.12)]">
+                <div
+                  className="mb-3 flex items-center gap-1"
+                  aria-label={`${t.rating} out of 5 stars`}
+                >
                   {Array.from({ length: t.rating }).map((_, i) => (
                     <Star
                       key={i}
