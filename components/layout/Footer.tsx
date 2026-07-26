@@ -67,7 +67,6 @@ const footerLinks = {
     { label: "How to Apply", href: "/contact" },
     { label: "Eligibility", href: "/courses" },
     { label: "Course Fees", href: "/courses" },
-    { label: "Scholarships", href: "/about" },
     { label: "Refund Policy", href: "/about" },
   ],
   Resources: [

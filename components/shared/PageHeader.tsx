@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import type { ReactNode } from "react";
 
 interface PageHeaderProps {
@@ -27,15 +28,15 @@ export default function PageHeader({
         className="absolute right-4 sm:right-12 lg:right-24 top-1/2 -translate-y-1/2 select-none pointer-events-none flex items-center gap-6 z-0 opacity-90"
         aria-hidden="true"
       >
-        {/* Medical Academy Circular Crest Seal */}
-        <div className="hidden md:block w-36 h-36 lg:w-44 lg:h-44 text-teal-800/[0.07] flex-shrink-0">
-          <svg viewBox="0 0 100 100" className="w-full h-full fill-current">
-            <circle cx="50" cy="50" r="46" fill="none" stroke="currentColor" strokeWidth="2" strokeDasharray="3 3" />
-            <circle cx="50" cy="50" r="40" fill="none" stroke="currentColor" strokeWidth="1.5" />
-            <path d="M50 20 L50 80 M20 50 L80 50" stroke="currentColor" strokeWidth="2" />
-            <circle cx="50" cy="50" r="16" fill="none" stroke="currentColor" strokeWidth="1.5" />
-            <path d="M50 38 L54 46 L62 50 L54 54 L50 62 L46 54 L38 50 L46 46 Z" />
-          </svg>
+        {/* Academy Logo Watermark */}
+        <div className="hidden md:block w-36 h-36 lg:w-44 lg:h-44 flex-shrink-0 opacity-[0.08]">
+          <Image
+            src="/logo.svg"
+            alt=""
+            width={176}
+            height={176}
+            className="w-full h-full object-contain"
+          />
         </div>
 
         {/* Executive Branding Text with Refined ACADEMY Proportions */}
