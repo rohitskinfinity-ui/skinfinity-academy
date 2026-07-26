@@ -277,7 +277,7 @@
     @apply inline-flex items-center gap-2 px-4 py-1.5 bg-teal-50 text-teal-700 text-xs font-semibold tracking-widest uppercase rounded-full border border-teal-100;
   }
   .section-title {
-    @apply text-3xl sm:text-4xl lg:text-5xl font-bold text-slate-900 leading-tight;
+    @apply text-2xl sm:text-3xl lg:text-4xl font-bold text-slate-900 leading-tight;
     font-family: var(--font-heading), sans-serif;
   }
   .section-subtitle {

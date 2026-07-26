@@ -2,28 +2,73 @@
 
 import { useState } from "react";
 import MaterialIcon from "@/components/shared/MaterialIcon";
+import { cn } from "@/lib/utils";
 
 interface CalendarProps {
   selectedDate?: string; // YYYY-MM-DD
   onSelectDate: (dateIso: string) => void;
   className?: string;
+  /** Hide masterclass event dots (use for DOB / general pickers) */
+  showEvents?: boolean;
+  /** Prevent selecting future dates */
+  disableFuture?: boolean;
 }
 
 const MONTH_NAMES = [
-  "January", "February", "March", "April", "May", "June",
-  "July", "August", "September", "October", "November", "December"
+  "January",
+  "February",
+  "March",
+  "April",
+  "May",
+  "June",
+  "July",
+  "August",
+  "September",
+  "October",
+  "November",
+  "December",
 ];
 
 const DAYS_OF_WEEK = ["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"];
+
+const EVENT_DATES = [
+  "2025-08-15",
+  "2025-08-22",
+  "2025-09-05",
+  "2025-09-12",
+  "2025-09-20",
+  "2025-10-02",
+];
+
+function toIso(y: number, m0: number, d: number) {
+  const mm = String(m0 + 1).padStart(2, "0");
+  const dd = String(d).padStart(2, "0");
+  return `${y}-${mm}-${dd}`;
+}
+
+function todayIso() {
+  const n = new Date();
+  return toIso(n.getFullYear(), n.getMonth(), n.getDate());
+}
 
 export default function Calendar({
   selectedDate,
   onSelectDate,
   className = "",
+  showEvents = true,
+  disableFuture = false,
 }: CalendarProps) {
-  // Initial month view based on selectedDate or default August 2025 (matching events)
-  const initialYear = selectedDate ? parseInt(selectedDate.split("-")[0]) : 2025;
-  const initialMonth = selectedDate ? parseInt(selectedDate.split("-")[1]) - 1 : 7; // Aug = 7 (0-indexed)
+  const today = todayIso();
+  const initialYear = selectedDate
+    ? parseInt(selectedDate.split("-")[0], 10)
+    : showEvents
+      ? 2025
+      : new Date().getFullYear() - 25;
+  const initialMonth = selectedDate
+    ? parseInt(selectedDate.split("-")[1], 10) - 1
+    : showEvents
+      ? 7
+      : 0;
 
   const [currentYear, setCurrentYear] = useState(initialYear);
   const [currentMonth, setCurrentMonth] = useState(initialMonth);
@@ -31,56 +76,90 @@ export default function Calendar({
   const prevMonth = () => {
     if (currentMonth === 0) {
       setCurrentMonth(11);
-      setCurrentYear(currentYear - 1);
+      setCurrentYear((y) => y - 1);
     } else {
-      setCurrentMonth(currentMonth - 1);
+      setCurrentMonth((m) => m - 1);
     }
   };
 
   const nextMonth = () => {
     if (currentMonth === 11) {
       setCurrentMonth(0);
-      setCurrentYear(currentYear + 1);
+      setCurrentYear((y) => y + 1);
     } else {
-      setCurrentMonth(currentMonth + 1);
+      setCurrentMonth((m) => m + 1);
     }
   };
 
-  // Get total days in month
   const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
-  // Get first day of week (0 = Sunday, 6 = Saturday)
   const firstDayOfWeek = new Date(currentYear, currentMonth, 1).getDay();
 
-  // Highlighted event dates for visual indicators (Aug 15, Aug 22, Sep 5, Sep 12, Sep 20, Oct 2)
-  const eventDates = ["2025-08-15", "2025-08-22", "2025-09-05", "2025-09-12", "2025-09-20", "2025-10-02"];
+  const nowYear = new Date().getFullYear();
+  const minYear = showEvents ? 2024 : 1950;
+  const maxYear = disableFuture ? nowYear : nowYear + 5;
+  const years = Array.from(
+    { length: maxYear - minYear + 1 },
+    (_, i) => maxYear - i
+  );
+
+  const selectClass =
+    "appearance-none rounded-lg border border-slate-200 bg-slate-50 px-2 py-1.5 text-xs font-bold text-slate-900 outline-none transition-colors hover:border-teal-300 focus:border-teal-500 focus:ring-1 focus:ring-teal-500";
 
   return (
-    <div className={`w-[290px] bg-white rounded-3xl p-4 border border-slate-200 shadow-2xl select-none font-sans ${className}`}>
-      {/* Month & Navigation Header */}
-      <div className="flex items-center justify-between pb-3 border-b border-slate-100 mb-3">
+    <div
+      className={cn(
+        "w-[300px] select-none rounded-3xl border border-slate-200 bg-white p-4 font-sans shadow-2xl",
+        className
+      )}
+    >
+      <div className="mb-3 flex items-center justify-between gap-2 border-b border-slate-100 pb-3">
         <button
+          type="button"
           onClick={prevMonth}
-          className="w-8 h-8 rounded-xl bg-slate-100 hover:bg-teal-50 hover:text-teal-600 text-slate-600 flex items-center justify-center transition-colors"
+          className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-slate-100 text-slate-600 transition-colors hover:bg-teal-50 hover:text-teal-600"
           title="Previous Month"
         >
           <MaterialIcon name="chevron_left" size={20} />
         </button>
 
-        <span className="text-sm font-extrabold text-slate-900 tracking-tight" style={{ fontFamily: "var(--font-heading), sans-serif" }}>
-          {MONTH_NAMES[currentMonth]} {currentYear}
-        </span>
+        <div className="flex min-w-0 flex-1 items-center justify-center gap-1.5">
+          <select
+            aria-label="Select month"
+            value={currentMonth}
+            onChange={(e) => setCurrentMonth(Number(e.target.value))}
+            className={cn(selectClass, "max-w-[7.5rem]")}
+          >
+            {MONTH_NAMES.map((name, i) => (
+              <option key={name} value={i}>
+                {name}
+              </option>
+            ))}
+          </select>
+          <select
+            aria-label="Select year"
+            value={currentYear}
+            onChange={(e) => setCurrentYear(Number(e.target.value))}
+            className={cn(selectClass, "max-w-[4.5rem]")}
+          >
+            {years.map((y) => (
+              <option key={y} value={y}>
+                {y}
+              </option>
+            ))}
+          </select>
+        </div>
 
         <button
+          type="button"
           onClick={nextMonth}
-          className="w-8 h-8 rounded-xl bg-slate-100 hover:bg-teal-50 hover:text-teal-600 text-slate-600 flex items-center justify-center transition-colors"
+          className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-slate-100 text-slate-600 transition-colors hover:bg-teal-50 hover:text-teal-600"
           title="Next Month"
         >
           <MaterialIcon name="chevron_right" size={20} />
         </button>
       </div>
 
-      {/* Weekday Labels */}
-      <div className="grid grid-cols-7 gap-1 text-center mb-2">
+      <div className="mb-2 grid grid-cols-7 gap-1 text-center">
         {DAYS_OF_WEEK.map((day) => (
           <span key={day} className="text-[11px] font-bold text-slate-400">
             {day}
@@ -88,52 +167,73 @@ export default function Calendar({
         ))}
       </div>
 
-      {/* Days Grid */}
       <div className="grid grid-cols-7 gap-1">
-        {/* Empty Padding Cells before First Day */}
         {Array.from({ length: firstDayOfWeek }).map((_, i) => (
           <div key={`empty-${i}`} className="h-8" />
         ))}
 
-        {/* Days of Month */}
         {Array.from({ length: daysInMonth }).map((_, i) => {
           const dayNumber = i + 1;
-          const dayStr = dayNumber < 10 ? `0${dayNumber}` : `${dayNumber}`;
-          const monthStr = currentMonth + 1 < 10 ? `0${currentMonth + 1}` : `${currentMonth + 1}`;
-          const dateIso = `${currentYear}-${monthStr}-${dayStr}`;
-
+          const dateIso = toIso(currentYear, currentMonth, dayNumber);
           const isSelected = selectedDate === dateIso;
-          const hasEvent = eventDates.includes(dateIso);
+          const hasEvent = showEvents && EVENT_DATES.includes(dateIso);
+          const isFuture = disableFuture && dateIso > today;
+          const isToday = dateIso === today;
 
           return (
             <button
               key={dateIso}
+              type="button"
+              disabled={isFuture}
               onClick={() => onSelectDate(dateIso)}
-              className={`h-8 rounded-xl text-xs font-bold relative flex items-center justify-center transition-all ${
-                isSelected
-                  ? "bg-teal-600 text-white shadow-teal font-extrabold scale-105"
-                  : hasEvent
-                  ? "bg-teal-50 text-teal-700 hover:bg-teal-100 font-bold border border-teal-200/80"
-                  : "text-slate-700 hover:bg-slate-100"
-              }`}
+              className={cn(
+                "relative flex h-8 items-center justify-center rounded-xl text-xs font-bold transition-all",
+                isSelected &&
+                  "scale-105 bg-teal-600 font-extrabold text-white shadow-teal",
+                !isSelected &&
+                  hasEvent &&
+                  "border border-teal-200/80 bg-teal-50 font-bold text-teal-700 hover:bg-teal-100",
+                !isSelected &&
+                  !hasEvent &&
+                  !isFuture &&
+                  "text-slate-700 hover:bg-slate-100",
+                !isSelected && isToday && "ring-1 ring-teal-400",
+                isFuture && "cursor-not-allowed text-slate-300"
+              )}
             >
               {dayNumber}
               {hasEvent && !isSelected && (
-                <span className="absolute bottom-1 w-1 h-1 rounded-full bg-teal-600" />
+                <span className="absolute bottom-1 h-1 w-1 rounded-full bg-teal-600" />
               )}
             </button>
           );
         })}
       </div>
 
-      {/* Footer Clear & Action */}
-      <div className="mt-3 pt-2 border-t border-slate-100 flex items-center justify-between text-[11px]">
-        <div className="flex items-center gap-1.5 text-slate-500">
-          <span className="w-2 h-2 rounded-full bg-teal-600" />
-          <span>Active Masterclasses</span>
-        </div>
+      <div className="mt-3 flex items-center justify-between border-t border-slate-100 pt-2 text-[11px]">
+        {showEvents ? (
+          <div className="flex items-center gap-1.5 text-slate-500">
+            <span className="h-2 w-2 rounded-full bg-teal-600" />
+            <span>Active Masterclasses</span>
+          </div>
+        ) : (
+          <button
+            type="button"
+            onClick={() => {
+              if (disableFuture) {
+                onSelectDate(today);
+                return;
+              }
+              onSelectDate(today);
+            }}
+            className="font-bold text-teal-600 hover:underline"
+          >
+            Today
+          </button>
+        )}
         {selectedDate && (
           <button
+            type="button"
             onClick={() => onSelectDate("")}
             className="font-bold text-rose-600 hover:underline"
           >

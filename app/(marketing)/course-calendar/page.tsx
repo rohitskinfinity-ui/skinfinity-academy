@@ -17,7 +17,7 @@ export default function CourseCalendarPage() {
       <UpcomingSchedule />
 
       {/* Additional Info & Helpline Banner */}
-      <section className="border-b border-slate-200/60 bg-[#f8fafc] py-10 sm:py-12">
+      {/* <section className="border-b border-slate-200/60 bg-[#f8fafc] py-10 sm:py-12">
         <div className="container-max px-4 sm:px-6 lg:px-8">
           <div className="flex flex-col items-start justify-between gap-6 rounded-[28px] border border-slate-200 bg-white p-7 sm:flex-row sm:items-center sm:p-9">
             <div className="max-w-xl">
@@ -53,7 +53,7 @@ export default function CourseCalendarPage() {
             </div>
           </div>
         </div>
-      </section>
+      </section> */}
     </div>
   );
 }

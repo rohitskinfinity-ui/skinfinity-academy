@@ -5,6 +5,8 @@ import Image from "next/image";
 import FadeIn from "@/components/motion/FadeIn";
 import AnimatedCounter from "@/components/motion/AnimatedCounter";
 import GradientText from "@/components/shared/GradientText";
+import PillarsCircle from "@/components/sections/PillarsCircle";
+import ValuesOrbit from "@/components/sections/ValuesOrbit";
 
 const stats = [
   { value: 12000, suffix: "+", label: "Doctors & Surgeons Trained" },
@@ -203,7 +205,7 @@ export default function AboutPage() {
       </section>
 
       {/* By the Numbers */}
-      <section className="relative overflow-hidden border-y border-slate-200/60 bg-gradient-to-br from-teal-800 via-teal-700 to-violet-900 py-10 sm:py-12">
+      {/* <section className="relative overflow-hidden border-y border-slate-200/60 bg-gradient-to-br from-teal-800 via-teal-700 to-violet-900 py-10 sm:py-12">
         <div className="absolute inset-0 pattern-grid opacity-20" aria-hidden />
         <div className="container-max relative px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-2 gap-8 lg:grid-cols-4">
@@ -219,7 +221,7 @@ export default function AboutPage() {
             ))}
           </div>
         </div>
-      </section>
+      </section> */}
 
       {/* Hero Brand Statement Section (Inspired by Reference Design) */}
       {/* <section className="py-20 sm:py-28 relative overflow-hidden bg-white border-b border-slate-200">
@@ -303,44 +305,22 @@ export default function AboutPage() {
         </div>
       </section> */}
 
-      {/* Four Pillars Section */}
-      <section className="py-8 sm:py-10 bg-slate-50 border-b border-slate-200/60">
+      {/* Four Pillars Section — circular composition */}
+      <section className="border-b border-slate-200/60 bg-slate-50 py-8 sm:py-10">
         <div className="container-max px-4 sm:px-6 lg:px-8">
-          <div className="max-w-3xl mb-6 sm:mb-8">
-            <span className="text-xs font-bold uppercase tracking-widest text-teal-600 bg-teal-50 px-3.5 py-1.5 rounded-full border border-teal-100">
+          <div className="mx-auto mb-6 max-w-2xl text-center sm:mb-10">
+            <span className="rounded-full border border-teal-100 bg-teal-50 px-3.5 py-1.5 text-xs font-bold uppercase tracking-widest text-teal-600">
               Our Core Pillars
             </span>
             <h2
-              className="text-3xl sm:text-4xl font-extrabold text-slate-900 mt-4"
+              className="mt-4 text-3xl font-extrabold text-slate-900 sm:text-4xl"
               style={{ fontFamily: "var(--font-heading), sans-serif" }}
             >
               Why Doctors Trust Skinfinity Academy
             </h2>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            {pillars.map((p, i) => (
-              <div
-                key={i}
-                className="bg-white rounded-3xl p-8 border border-slate-200/80 shadow-soft hover:shadow-card-hover transition-all duration-300 group flex flex-col justify-between"
-              >
-                <div>
-                  <div className="w-14 h-14 rounded-2xl bg-teal-50 text-teal-600 flex items-center justify-center mb-6 group-hover:bg-teal-600 group-hover:text-white transition-all shadow-sm">
-                    <MaterialIcon name={p.icon} size={28} />
-                  </div>
-                  <h3
-                    className="text-lg font-bold text-slate-900 mb-3"
-                    style={{ fontFamily: "var(--font-heading), sans-serif" }}
-                  >
-                    {p.title}
-                  </h3>
-                  <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
-                    {p.desc}
-                  </p>
-                </div>
-              </div>
-            ))}
-          </div>
+          <PillarsCircle pillars={pillars} />
         </div>
       </section>
 
@@ -388,34 +368,25 @@ export default function AboutPage() {
         </div>
       </section>
 
-      {/* Our Values */}
-      <section className="section-padding bg-slate-50 border-b border-slate-200/60">
+      {/* Our Values — circular orbit like homepage */}
+      <section className="section-padding border-b border-slate-200/60 bg-white">
         <div className="container-max">
-          <div className="mx-auto mb-6 sm:mb-8 max-w-2xl text-center">
+          <div className="mx-auto mb-8 max-w-2xl text-center sm:mb-10">
             <span className="section-tag mb-2 inline-flex">What We Stand For</span>
-            <h2 className="section-title mt-2">
+            <h2
+              className="section-title mt-2 mb-2"
+              style={{ fontFamily: "var(--font-heading), sans-serif" }}
+            >
               The values that guide{" "}
-              <GradientText>every program</GradientText>
+              <span className="text-teal-700">every program</span>
             </h2>
+            <p className="section-subtitle mx-auto">
+              Six principles orbiting one goal — clinical excellence for every
+              doctor.
+            </p>
           </div>
 
-          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            {values.map((v, i) => (
-              <FadeIn key={v.title} delay={i * 0.05}>
-                <div className="group h-full rounded-[24px] border border-slate-200/80 bg-white p-7 shadow-soft transition-all duration-300 hover:-translate-y-1 hover:shadow-card-hover">
-                  <div className="mb-5 flex h-14 w-14 items-center justify-center rounded-2xl bg-teal-50 text-teal-600 transition-all group-hover:bg-teal-600 group-hover:text-white">
-                    <MaterialIcon name={v.icon} size={26} />
-                  </div>
-                  <h3 className="mb-2 text-lg font-bold text-slate-900">
-                    {v.title}
-                  </h3>
-                  <p className="text-sm leading-relaxed text-slate-600">
-                    {v.desc}
-                  </p>
-                </div>
-              </FadeIn>
-            ))}
-          </div>
+          <ValuesOrbit values={values} />
         </div>
       </section>
 

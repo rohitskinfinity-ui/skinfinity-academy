@@ -41,17 +41,17 @@ export default function PageHeader({
         {/* Executive Branding Text with Refined ACADEMY Proportions */}
         <div className="text-right flex flex-col items-end">
           <div
-            className="text-[34px] sm:text-[54px] md:text-[70px] lg:text-[84px] font-extrabold uppercase tracking-[0.16em] leading-none text-transparent bg-clip-text bg-gradient-to-r from-teal-800/[0.09] via-slate-900/[0.07] to-amber-700/[0.09]"
+            className="text-[28px] font-extrabold uppercase leading-none tracking-[0.16em] text-transparent bg-clip-text bg-gradient-to-r from-teal-800/[0.09] via-slate-900/[0.07] to-amber-700/[0.09] sm:text-[40px] md:text-[52px] lg:text-[64px]"
             style={{ WebkitTextStroke: "1px rgba(13, 148, 136, 0.12)" }}
           >
             SKINFINITY
           </div>
           
           {/* Subtle Accent Line */}
-          <div className="w-full h-px bg-gradient-to-l from-teal-600/20 via-teal-600/10 to-transparent my-1 sm:my-1.5" />
+          <div className="my-1 h-px w-full bg-gradient-to-l from-teal-600/20 via-teal-600/10 to-transparent sm:my-1.5" />
 
           <div
-            className="text-[18px] sm:text-[28px] md:text-[36px] lg:text-[44px] font-extrabold uppercase tracking-[0.34em] text-teal-700/[0.1] leading-none"
+            className="text-[14px] font-extrabold uppercase leading-none tracking-[0.34em] text-teal-700/[0.1] sm:text-[22px] md:text-[28px] lg:text-[34px]"
             style={{ WebkitTextStroke: "0.5px rgba(13, 148, 136, 0.15)" }}
           >
             ACADEMY
@@ -80,7 +80,7 @@ export default function PageHeader({
         {/* Large Editorial Headline */}
         {(title || highlight) && (
           <h1
-            className="relative text-3xl sm:text-5xl md:text-6xl font-extrabold tracking-tight text-slate-900 leading-[1.08] mb-3 max-w-4xl animate-in fade-in slide-in-from-bottom-2 duration-700"
+            className="relative mb-3 max-w-3xl text-2xl font-extrabold leading-[1.15] tracking-tight text-slate-900 animate-in fade-in slide-in-from-bottom-2 duration-700 sm:text-3xl md:text-4xl"
             style={{ fontFamily: "var(--font-heading), sans-serif" }}
           >
             {title}{" "}
