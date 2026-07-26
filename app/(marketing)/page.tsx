@@ -33,6 +33,9 @@ const Certifications = dynamic(
   () => import("@/components/sections/Certifications"),
   { loading: () => <SectionSkeleton cards={2} /> }
 );
+const Blog = dynamic(() => import("@/components/sections/Blog"), {
+  loading: () => <SectionSkeleton cards={3} />,
+});
 const FAQ = dynamic(() => import("@/components/sections/FAQ"), {
   loading: () => <SectionSkeleton cards={1} />,
 });
@@ -51,6 +54,7 @@ export default function HomePage() {
       <StudentDashboardPreview />
       <StudentSuccess />
       <Certifications />
+      <Blog />
       <FAQ />
       <CTA />
     </>

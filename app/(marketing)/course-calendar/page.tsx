@@ -17,34 +17,35 @@ export default function CourseCalendarPage() {
       <UpcomingSchedule />
 
       {/* Additional Info & Helpline Banner */}
-      <section className="py-16 bg-white border-b border-slate-200/60">
+      <section className="border-b border-slate-200/60 bg-[#f8fafc] py-10 sm:py-12">
         <div className="container-max px-4 sm:px-6 lg:px-8">
-          <div className="bg-slate-900 rounded-3xl p-8 sm:p-12 text-white border border-slate-800 shadow-card flex flex-col md:flex-row items-center justify-between gap-8">
-            <div className="max-w-2xl">
-              <span className="text-xs font-bold uppercase tracking-widest text-teal-400 bg-teal-500/10 border border-teal-500/20 px-3.5 py-1.5 rounded-full inline-block mb-3">
-                Need Custom Training Dates?
-              </span>
+          <div className="flex flex-col items-start justify-between gap-6 rounded-[28px] border border-slate-200 bg-white p-7 sm:flex-row sm:items-center sm:p-9">
+            <div className="max-w-xl">
+              <p className="mb-2 text-[10px] font-bold uppercase tracking-[0.18em] text-teal-600">
+                Need custom training dates?
+              </p>
               <h3
-                className="text-2xl sm:text-3xl font-extrabold"
+                className="text-2xl font-bold text-slate-900 sm:text-3xl"
                 style={{ fontFamily: "var(--font-heading), sans-serif" }}
               >
-                Can't find a suitable date in your city?
+                Can&apos;t find a suitable date in your city?
               </h3>
-              <p className="text-slate-300 text-sm sm:text-base mt-2 leading-relaxed">
-                Contact our admissions advisory team to request private 1:1 doctor mentorship sessions or custom group clinical dates at our partner hospitals.
+              <p className="mt-2 text-sm leading-relaxed text-slate-500 sm:text-base">
+                Request private 1:1 doctor mentorship or custom group clinical
+                dates at our partner hospitals.
               </p>
             </div>
-            <div className="flex flex-col sm:flex-row gap-3 w-full md:w-auto flex-shrink-0">
+            <div className="flex w-full flex-col gap-3 sm:w-auto sm:flex-row">
               <Link
                 href="/contact"
-                className="px-6 py-3.5 bg-teal-600 hover:bg-teal-700 text-white font-bold text-sm rounded-2xl transition-all shadow-teal flex items-center justify-center gap-2"
+                className="inline-flex items-center justify-center gap-2 rounded-2xl bg-teal-700 px-6 py-3.5 text-sm font-bold text-white transition-all hover:bg-teal-800"
               >
                 Request Custom Schedule
                 <MaterialIcon name="arrow_forward" size={16} />
               </Link>
               <a
                 href="tel:+919876543210"
-                className="px-6 py-3.5 bg-white/10 hover:bg-white/15 text-white font-bold text-sm rounded-2xl border border-white/20 transition-all flex items-center justify-center gap-2"
+                className="inline-flex items-center justify-center gap-2 rounded-2xl border border-slate-200 bg-white px-6 py-3.5 text-sm font-bold text-slate-700 transition-all hover:border-teal-300 hover:text-teal-700"
               >
                 <MaterialIcon name="call" size={16} />
                 Call Admissions
