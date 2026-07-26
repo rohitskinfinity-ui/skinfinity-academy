@@ -113,7 +113,7 @@ export default function Footer() {
 
       <div className="container-max relative px-4 sm:px-6 lg:px-8">
         {/* Newsletter */}
-        <div className="relative mb-12 overflow-hidden rounded-[28px] bg-gradient-to-br from-teal-700 to-teal-900 p-6 sm:p-10">
+        {/* <div className="relative mb-12 overflow-hidden rounded-[28px] bg-gradient-to-br from-teal-700 to-teal-900 p-6 sm:p-10">
           <div className="absolute right-0 top-0 h-64 w-64 rounded-full bg-teal-400/20 blur-3xl" aria-hidden />
           <div className="relative grid items-center gap-8 lg:grid-cols-2">
             <div>
@@ -147,7 +147,7 @@ export default function Footer() {
               </Button>
             </form>
           </div>
-        </div>
+        </div> */}
 
         <div className="mb-12 grid grid-cols-2 gap-8 md:grid-cols-3 lg:grid-cols-6">
           <div className="col-span-2">
