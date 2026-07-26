@@ -12,6 +12,60 @@ const fieldClass =
 const labelClass =
   "block text-[11px] font-bold uppercase tracking-wider text-slate-500 mb-1";
 
+const PROGRAM_FEE = 120000;
+
+function formatINR(amount: number) {
+  return new Intl.NumberFormat("en-IN", {
+    style: "currency",
+    currency: "INR",
+    maximumFractionDigits: 0,
+  }).format(amount);
+}
+
+function StepIndicator({ step }: { step: 1 | 2 }) {
+  return (
+    <div className="mb-6 flex items-center gap-3">
+      <div className="flex items-center gap-2">
+        <span
+          className={`flex h-8 w-8 items-center justify-center rounded-full text-xs font-bold ${
+            step >= 1
+              ? "bg-teal-600 text-white"
+              : "bg-slate-100 text-slate-400"
+          }`}
+        >
+          1
+        </span>
+        <span
+          className={`text-sm font-bold ${
+            step === 1 ? "text-slate-900" : "text-slate-500"
+          }`}
+        >
+          Details
+        </span>
+      </div>
+      <div className="h-px flex-1 bg-slate-200" />
+      <div className="flex items-center gap-2">
+        <span
+          className={`flex h-8 w-8 items-center justify-center rounded-full text-xs font-bold ${
+            step >= 2
+              ? "bg-teal-600 text-white"
+              : "bg-slate-100 text-slate-400"
+          }`}
+        >
+          2
+        </span>
+        <span
+          className={`text-sm font-bold ${
+            step === 2 ? "text-slate-900" : "text-slate-500"
+          }`}
+        >
+          Checkout
+        </span>
+      </div>
+    </div>
+  );
+}
+
 function EnrollFormContent() {
   const searchParams = useSearchParams();
   const initialProgram =
@@ -19,6 +73,7 @@ function EnrollFormContent() {
     searchParams.get("title") ||
     "Fellowship in Aesthetic Dermatology";
 
+  const [step, setStep] = useState<1 | 2>(1);
   const [submitted, setSubmitted] = useState(false);
   const [formData, setFormData] = useState({
     fullName: "",
@@ -27,9 +82,7 @@ function EnrollFormContent() {
     qualification: "MBBS Doctor",
     regNumber: "",
     program: initialProgram,
-    campus: "Bengaluru Clinical Campus (MG Road)",
     batch: "August 2025 Upcoming Batch",
-    paymentOption: "deposit",
   });
 
   useEffect(() => {
@@ -41,6 +94,8 @@ function EnrollFormContent() {
   const update = (key: keyof typeof formData, value: string) =>
     setFormData((prev) => ({ ...prev, [key]: value }));
 
+  const payableAmount = PROGRAM_FEE;
+
   if (submitted) {
     return (
       <div className="rounded-3xl border border-teal-200 bg-teal-50 p-8 py-12 text-center">
@@ -51,7 +106,7 @@ function EnrollFormContent() {
           className="mb-2 text-2xl font-bold text-slate-900"
           style={{ fontFamily: "var(--font-heading), sans-serif" }}
         >
-          Application Submitted Successfully
+          Payment Initiated Successfully
         </h3>
         <p className="mx-auto mb-4 max-w-md text-sm text-slate-600">
           Thank you,{" "}
@@ -64,28 +119,194 @@ function EnrollFormContent() {
           </span>{" "}
           for <strong>{formData.program}</strong>.
         </p>
+        <p className="mb-2 text-sm font-semibold text-teal-700">
+          Amount paid: {formatINR(payableAmount)}
+        </p>
+        <div className="mx-auto mb-4 flex max-w-md items-start gap-3 rounded-2xl border border-teal-200 bg-white/70 p-4 text-left">
+          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-teal-100 text-teal-700">
+            <MaterialIcon name="login" size={18} />
+          </div>
+          <div>
+            <p className="text-sm font-bold text-slate-900">
+              Your student account is ready
+            </p>
+            <p className="mt-1 text-xs leading-relaxed text-slate-600">
+              You can now log in with Google using the same email address you
+              entered during registration:{" "}
+              <strong className="text-slate-900">{formData.email}</strong>
+            </p>
+          </div>
+        </div>
         <p className="mb-6 text-xs text-slate-500">
           Our academic board will review your application within 24 hours.
         </p>
-        <Link
-          href="/courses"
-          className="inline-flex items-center justify-center gap-2 rounded-xl bg-teal-600 px-8 py-3.5 text-sm font-bold text-white shadow-md transition-all hover:bg-teal-700"
-        >
-          BACK TO COURSES &gt;
-        </Link>
+        <div className="flex flex-col items-center justify-center gap-3 sm:flex-row">
+          <Link
+            href="/login"
+            className="inline-flex items-center justify-center gap-2 rounded-xl bg-teal-600 px-8 py-3.5 text-sm font-bold text-white shadow-md transition-all hover:bg-teal-700"
+          >
+            <MaterialIcon name="login" size={16} />
+            LOGIN NOW
+          </Link>
+          <Link
+            href="/courses"
+            className="inline-flex items-center justify-center gap-2 rounded-xl border border-slate-300 bg-white px-8 py-3.5 text-sm font-bold text-slate-700 transition-all hover:border-teal-300 hover:text-teal-700"
+          >
+            BACK TO COURSES &gt;
+          </Link>
+        </div>
       </div>
     );
   }
 
+  /* ───────── Step 2: Checkout ───────── */
+  if (step === 2) {
+    return (
+      <div className="space-y-5 pt-2">
+        <StepIndicator step={2} />
+
+        <div>
+          <span className="text-[10px] font-bold uppercase tracking-widest text-teal-600">
+            REVIEW & PAY
+          </span>
+          <h3
+            className="mt-1 text-2xl font-bold text-slate-900"
+            style={{ fontFamily: "var(--font-heading), sans-serif" }}
+          >
+            Checkout{" "}
+            <span className="font-serif italic font-normal text-teal-600">
+              summary
+            </span>
+          </h3>
+        </div>
+
+        {/* Applicant summary */}
+        <div className="rounded-2xl border border-slate-200 bg-slate-50/80 p-5 space-y-3">
+          <div className="flex items-center justify-between">
+            <h4 className="text-sm font-bold text-slate-900">
+              Applicant Details
+            </h4>
+            <button
+              type="button"
+              onClick={() => setStep(1)}
+              className="text-xs font-bold text-teal-600 hover:text-teal-700"
+            >
+              Edit
+            </button>
+          </div>
+          <div className="grid gap-2 text-sm sm:grid-cols-2">
+            <div>
+              <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
+                Name
+              </p>
+              <p className="font-semibold text-slate-800">{formData.fullName}</p>
+            </div>
+            <div>
+              <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
+                Email
+              </p>
+              <p className="font-semibold text-slate-800">{formData.email}</p>
+            </div>
+            <div>
+              <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
+                Phone
+              </p>
+              <p className="font-semibold text-slate-800">{formData.phone}</p>
+            </div>
+            <div>
+              <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
+                Qualification
+              </p>
+              <p className="font-semibold text-slate-800">
+                {formData.qualification}
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {/* Program summary */}
+        <div className="rounded-2xl border border-slate-200 bg-white p-5 space-y-3">
+          <h4 className="text-sm font-bold text-slate-900">Program Summary</h4>
+          <div className="space-y-2 text-sm">
+            <div className="flex justify-between gap-4">
+              <span className="text-slate-500">Program</span>
+              <span className="text-right font-semibold text-slate-900">
+                {formData.program}
+              </span>
+            </div>
+            <div className="flex justify-between gap-4">
+              <span className="text-slate-500">Batch</span>
+              <span className="text-right font-semibold text-slate-900">
+                {formData.batch}
+              </span>
+            </div>
+          </div>
+        </div>
+
+        {/* Amount breakdown */}
+        <div className="rounded-2xl border border-teal-200 bg-teal-50/50 p-5 space-y-2.5">
+          <h4 className="text-sm font-bold text-slate-900">Payment Breakdown</h4>
+          <div className="flex justify-between text-sm">
+            <span className="text-slate-600">Program fee (full payment)</span>
+            <span className="font-semibold text-slate-800">
+              {formatINR(PROGRAM_FEE)}
+            </span>
+          </div>
+          <div className="flex justify-between text-sm">
+            <span className="text-slate-600">Includes</span>
+            <span className="text-right font-medium text-slate-700">
+              LMS access &amp; video vault
+            </span>
+          </div>
+          <div className="flex items-center justify-between border-t border-teal-200 pt-3">
+            <span className="text-sm font-bold text-slate-900">
+              Payable now
+            </span>
+            <span className="text-2xl font-extrabold text-teal-700">
+              {formatINR(payableAmount)}
+            </span>
+          </div>
+        </div>
+
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+          <button
+            type="button"
+            onClick={() => setStep(1)}
+            className="flex items-center justify-center gap-2 rounded-xl border border-slate-300 bg-white px-6 py-3.5 text-sm font-bold text-slate-700 transition-all hover:border-teal-300 hover:text-teal-700"
+          >
+            <MaterialIcon name="arrow_back" size={16} />
+            BACK TO DETAILS
+          </button>
+          <button
+            type="button"
+            onClick={() => setSubmitted(true)}
+            className="flex flex-1 items-center justify-center gap-2 rounded-xl bg-teal-600 px-8 py-3.5 text-sm font-bold text-white shadow-md transition-all hover:bg-teal-700"
+          >
+            CHECKOUT · {formatINR(payableAmount)}
+            <MaterialIcon name="lock" size={16} />
+          </button>
+        </div>
+
+        <p className="text-[11px] italic text-slate-500">
+          Payments are processed securely. You will receive a confirmation email
+          with your enrollment reference.
+        </p>
+      </div>
+    );
+  }
+
+  /* ───────── Step 1: Details ───────── */
   return (
     <form
       onSubmit={(e) => {
         e.preventDefault();
-        setSubmitted(true);
+        setStep(2);
       }}
       className="space-y-5 pt-2"
     >
-      {/* Section 1 */}
+      <StepIndicator step={1} />
+
+      {/* Applicant info */}
       <div className="space-y-4">
         <div className="flex items-center gap-2 border-b border-slate-100 pb-2">
           <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-teal-50 text-xs font-bold text-teal-600">
@@ -96,7 +317,7 @@ function EnrollFormContent() {
           </h3>
         </div>
 
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+        <div className="space-y-4">
           <div>
             <label className={labelClass}>FULL NAME (WITH PREFIX) *</label>
             <input
@@ -119,9 +340,6 @@ function EnrollFormContent() {
               className={fieldClass}
             />
           </div>
-        </div>
-
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <div>
             <label className={labelClass}>PHONE / WHATSAPP *</label>
             <input
@@ -156,69 +374,43 @@ function EnrollFormContent() {
               </option>
             </select>
           </div>
-        </div>
-
-        <div>
-          <label className={labelClass}>
-            MEDICAL COUNCIL REGISTRATION NO. (OPTIONAL)
-          </label>
-          <input
-            type="text"
-            value={formData.regNumber}
-            onChange={(e) => update("regNumber", e.target.value)}
-            placeholder="e.g. KMC/12345/2020"
-            className={fieldClass}
-          />
+          <div>
+            <label className={labelClass}>
+              MEDICAL COUNCIL REGISTRATION NO. (OPTIONAL)
+            </label>
+            <input
+              type="text"
+              value={formData.regNumber}
+              onChange={(e) => update("regNumber", e.target.value)}
+              placeholder="e.g. KMC/12345/2020"
+              className={fieldClass}
+            />
+          </div>
         </div>
       </div>
 
-      {/* Section 2 */}
+      {/* Program preferences */}
       <div className="space-y-4 pt-2">
         <div className="flex items-center gap-2 border-b border-slate-100 pb-2">
           <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-teal-50 text-xs font-bold text-teal-600">
             2
           </div>
           <h3 className="text-sm font-bold text-slate-900">
-            Program &amp; Campus Preferences
+            Program Preferences
           </h3>
         </div>
 
-        <div>
-          <label className={labelClass}>SELECTED PROGRAM / COURSE *</label>
-          <input
-            type="text"
-            required
-            value={formData.program}
-            onChange={(e) => update("program", e.target.value)}
-            placeholder="e.g. Fellowship in Aesthetic Dermatology"
-            className={`${fieldClass} font-semibold text-teal-700`}
-          />
-        </div>
-
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+        <div className="space-y-4">
           <div>
-            <label className={labelClass}>PREFERRED CAMPUS *</label>
-            <select
-              value={formData.campus}
-              onChange={(e) => update("campus", e.target.value)}
-              className={`${fieldClass} text-slate-700`}
-            >
-              <option value="Bengaluru Clinical Campus (MG Road)">
-                Bengaluru Clinical Campus (MG Road)
-              </option>
-              <option value="Mumbai Clinical Campus (Bandra West)">
-                Mumbai Campus (Bandra West)
-              </option>
-              <option value="Delhi NCR Campus (Sarita Vihar)">
-                Delhi NCR Campus (Sarita Vihar)
-              </option>
-              <option value="Hyderabad Campus (Jubilee Hills)">
-                Hyderabad Campus (Jubilee Hills)
-              </option>
-              <option value="Online Live Hybrid HD Zoom">
-                Online HD Zoom Stream
-              </option>
-            </select>
+            <label className={labelClass}>SELECTED PROGRAM / COURSE *</label>
+            <input
+              type="text"
+              required
+              value={formData.program}
+              onChange={(e) => update("program", e.target.value)}
+              placeholder="e.g. Fellowship in Aesthetic Dermatology"
+              className={`${fieldClass} font-semibold text-teal-700`}
+            />
           </div>
           <div>
             <label className={labelClass}>UPCOMING BATCH *</label>
@@ -230,83 +422,23 @@ function EnrollFormContent() {
               <option value="August 2025 Upcoming Batch">
                 August 2025 Upcoming Batch
               </option>
-              <option value="September 2025 Batch">
-                September 2025 Batch
-              </option>
+              <option value="September 2025 Batch">September 2025 Batch</option>
               <option value="October 2025 Batch">October 2025 Batch</option>
             </select>
           </div>
         </div>
       </div>
 
-      {/* Section 3 */}
-      <div className="space-y-3 pt-2">
-        <div className="flex items-center gap-2 border-b border-slate-100 pb-2">
-          <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-teal-50 text-xs font-bold text-teal-600">
-            3
-          </div>
-          <h3 className="text-sm font-bold text-slate-900">
-            Seat Reservation Choice
-          </h3>
-        </div>
-
-        {[
-          {
-            id: "deposit",
-            title: "Pay Seat Reservation Deposit (₹5,000)",
-            desc: "Lock your seat today; balance payable at campus onset.",
-            badge: "₹5,000",
-          },
-          {
-            id: "full",
-            title: "Pay Full Program Fee",
-            desc: "Includes instant online LMS portal & video vault access.",
-            badge: "Full Fee",
-          },
-          {
-            id: "callback",
-            title: "Request 1:1 Doctor Admissions Counseling Call",
-            desc: "Free call with an academic advisor to discuss curriculum & dates.",
-            badge: "FREE",
-          },
-        ].map((opt) => (
-          <button
-            key={opt.id}
-            type="button"
-            onClick={() => update("paymentOption", opt.id)}
-            className={`flex w-full items-center justify-between gap-4 rounded-2xl border p-4 text-left transition-all ${
-              formData.paymentOption === opt.id
-                ? "border-teal-500 bg-teal-50/50 ring-1 ring-teal-500"
-                : "border-slate-200 bg-white hover:border-teal-300"
-            }`}
-          >
-            <div>
-              <p className="text-sm font-bold text-slate-900">{opt.title}</p>
-              <p className="mt-0.5 text-xs text-slate-500">{opt.desc}</p>
-            </div>
-            <span
-              className={`shrink-0 rounded-full px-3 py-1 text-xs font-bold ${
-                formData.paymentOption === opt.id
-                  ? "bg-teal-600 text-white"
-                  : "border border-slate-200 text-slate-600"
-              }`}
-            >
-              {opt.badge}
-            </span>
-          </button>
-        ))}
-      </div>
-
       <button
         type="submit"
-        className="flex items-center justify-center gap-2 rounded-xl bg-teal-600 px-8 py-3.5 text-sm font-bold text-white shadow-md transition-all hover:bg-teal-700"
+        className="flex w-full items-center justify-center gap-2 rounded-xl bg-teal-600 px-8 py-3.5 text-sm font-bold text-white shadow-md transition-all hover:bg-teal-700 sm:w-auto"
       >
-        SUBMIT ENROLLMENT APPLICATION &gt;
+        CONTINUE TO CHECKOUT
+        <MaterialIcon name="arrow_forward" size={16} />
       </button>
 
       <p className="mt-2 text-[11px] italic text-slate-500">
-        All doctor applications are reviewed by our academic board within 24
-        hours. For urgent queries, please call us directly.
+        Next step: review your summary and complete payment securely.
       </p>
     </form>
   );
@@ -355,7 +487,6 @@ export default function EnrollPage() {
       <section className="border-b border-slate-200 bg-white py-10">
         <div className="container-max px-4 sm:px-6 lg:px-8">
           <div className="grid items-start gap-12 lg:grid-cols-12">
-            {/* Left form column */}
             <div className="space-y-6 lg:col-span-7">
               <div>
                 <span className="text-[10px] font-bold uppercase tracking-widest text-teal-600">
@@ -384,7 +515,6 @@ export default function EnrollPage() {
               </Suspense>
             </div>
 
-            {/* Right cream sidebar — matching contact */}
             <div className="space-y-8 rounded-3xl border border-amber-900/10 bg-[#fcfaf7] p-8 lg:col-span-5">
               <div>
                 <span className="text-[10px] font-bold uppercase tracking-widest text-teal-700">
@@ -418,9 +548,9 @@ export default function EnrollPage() {
                       desc: "CIBTAC & CIDESCO aligned credentials",
                     },
                     {
-                      icon: "all_inclusive",
-                      title: "Lifetime LMS",
-                      desc: "Recordings & resources with no expiry",
+                      icon: "school",
+                      title: "3 year access to LMS",
+                      desc: "Recordings & resources with 3 year access",
                     },
                   ].map((item) => (
                     <div

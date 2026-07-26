@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
 import MaterialIcon from "@/components/shared/MaterialIcon";
 
@@ -14,12 +15,8 @@ const navItems = [
   { id: "notes", href: "/dashboard/notes", label: "Notes", icon: "note" },
   { id: "bookmarks", href: "/dashboard/bookmarks", label: "Bookmarks", icon: "bookmark" },
   { id: "certificates", href: "/dashboard/certificates", label: "Certificates", icon: "military_tech" },
-  { id: "leaderboard", href: "/dashboard/leaderboard", label: "Leaderboard", icon: "emoji_events" },
-  { id: "calendar", href: "/dashboard/calendar", label: "Calendar", icon: "calendar_month" },
-  { id: "messages", href: "/dashboard/messages", label: "Messages", icon: "forum" },
   { id: "notifications", href: "/dashboard/notifications", label: "Notifications", icon: "notifications" },
   { id: "payments", href: "/dashboard/payments", label: "Payments", icon: "credit_card" },
-  { id: "settings", href: "/dashboard/settings", label: "Settings", icon: "settings" },
   { id: "profile", href: "/dashboard/profile", label: "Profile", icon: "person" },
   { id: "refer", href: "/dashboard/refer", label: "Refer & Earn", icon: "redeem" },
 ];
@@ -34,69 +31,95 @@ export default function LMSLayout({ children }: { children: React.ReactNode }) {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 flex">
+    <div className="flex min-h-screen bg-[#F4F7F9]">
       {/* Sidebar */}
       <aside
-        className={`fixed lg:sticky top-0 left-0 h-screen w-64 bg-white border-r border-slate-100 z-50 transition-transform duration-300 ${
+        className={`fixed left-0 top-0 z-50 flex h-screen w-[260px] flex-col border-r border-slate-200/80 bg-white/90 shadow-[4px_0_24px_rgba(15,23,42,0.03)] backdrop-blur-xl transition-transform duration-300 lg:sticky ${
           sidebarOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"
         }`}
       >
-        <div className="flex items-center justify-between p-5 border-b border-slate-100">
+        <div className="flex items-center justify-between border-b border-slate-100 px-5 py-5">
           <Link href="/dashboard" className="flex items-center gap-2.5">
-            <div className="w-10 h-10 rounded-2xl bg-gradient-brand flex items-center justify-center p-1.5">
-              <img src="/logo.svg" alt="Skinfinity Logo" className="w-full h-full object-contain" />
-            </div>
+            <Image
+              src="/logo.svg"
+              alt="Skinfinity Logo"
+              width={40}
+              height={40}
+              className="h-10 w-10 object-contain"
+            />
             <div>
-              <p
-                className="font-bold text-slate-900 text-sm"
-                style={{ fontFamily: "var(--font-heading), sans-serif" }}
-              >
-                Skinfinity
-              </p>
-              <p className="text-[9px] text-teal-600 font-semibold tracking-widest uppercase">
+              <p className="text-sm font-bold text-slate-900">Skinfinity</p>
+              <p className="text-[9px] font-semibold uppercase tracking-[0.18em] text-teal-600">
                 LMS Portal
               </p>
             </div>
           </Link>
           <button
             onClick={() => setSidebarOpen(false)}
-            className="lg:hidden p-1.5 rounded-lg hover:bg-slate-100"
+            className="rounded-xl p-1.5 hover:bg-slate-100 lg:hidden"
+            aria-label="Close sidebar"
           >
             <MaterialIcon name="close" size={18} />
           </button>
         </div>
 
-        <nav className="p-3 overflow-y-auto h-[calc(100vh-140px)] scrollbar-hide">
-          {navItems.map((item) => {
+        <nav className="scrollbar-hide flex-1 overflow-y-auto p-3 pb-4">
+          <p className="mb-2 px-3 text-[10px] font-bold uppercase tracking-widest text-slate-400">
+            Learn
+          </p>
+          {navItems.slice(0, 8).map((item) => {
             const isActive = pathname === item.href;
             return (
               <Link
                 key={item.id}
                 href={item.href}
                 onClick={() => setSidebarOpen(false)}
-                className={`flex items-center gap-3 w-full px-3.5 py-2.5 rounded-xl text-sm font-medium mb-1 transition-all ${
+                className={`mb-0.5 flex w-full items-center gap-3 rounded-xl px-3.5 py-2.5 text-sm font-medium transition-all ${
                   isActive
-                    ? "bg-teal-50 text-teal-700"
-                    : "text-slate-500 hover:bg-slate-50 hover:text-slate-700"
+                    ? "bg-gradient-to-r from-teal-600 to-teal-700 text-white shadow-[0_8px_20px_rgba(15,118,110,0.25)]"
+                    : "text-slate-500 hover:bg-slate-50 hover:text-slate-800"
+                }`}
+              >
+                <MaterialIcon name={item.icon} size={18} />
+                {item.label}
+              </Link>
+            );
+          })}
+
+          <p className="mb-2 mt-4 px-3 text-[10px] font-bold uppercase tracking-widest text-slate-400">
+            Account
+          </p>
+          {navItems.slice(8).map((item) => {
+            const isActive = pathname === item.href;
+            return (
+              <Link
+                key={item.id}
+                href={item.href}
+                onClick={() => setSidebarOpen(false)}
+                className={`mb-0.5 flex w-full items-center gap-3 rounded-xl px-3.5 py-2.5 text-sm font-medium transition-all ${
+                  isActive
+                    ? "bg-gradient-to-r from-teal-600 to-teal-700 text-white shadow-[0_8px_20px_rgba(15,118,110,0.25)]"
+                    : "text-slate-500 hover:bg-slate-50 hover:text-slate-800"
                 }`}
               >
                 <MaterialIcon name={item.icon} size={18} />
                 {item.label}
                 {item.id === "notifications" && (
-                  <span className="ml-auto w-2 h-2 rounded-full bg-teal-500" />
-                )}
-                {item.id === "messages" && (
-                  <span className="ml-auto w-2 h-2 rounded-full bg-teal-500" />
+                  <span
+                    className={`ml-auto h-2 w-2 rounded-full ${
+                      isActive ? "bg-white" : "bg-teal-500"
+                    }`}
+                  />
                 )}
               </Link>
             );
           })}
         </nav>
 
-        <div className="absolute bottom-0 left-0 right-0 p-3 border-t border-slate-100 bg-white">
+        <div className="border-t border-slate-100 p-3">
           <button
             onClick={handleLogout}
-            className="flex items-center gap-3 w-full px-3.5 py-2.5 rounded-xl text-sm font-medium text-slate-500 hover:bg-red-50 hover:text-red-600 transition-all"
+            className="flex w-full items-center gap-3 rounded-xl px-3.5 py-2.5 text-sm font-medium text-slate-500 transition-all hover:bg-red-50 hover:text-red-600"
           >
             <MaterialIcon name="logout" size={18} />
             Logout
@@ -107,18 +130,19 @@ export default function LMSLayout({ children }: { children: React.ReactNode }) {
       {sidebarOpen && (
         <div
           onClick={() => setSidebarOpen(false)}
-          className="fixed inset-0 bg-slate-900/50 z-40 lg:hidden"
+          className="fixed inset-0 z-40 bg-slate-900/40 backdrop-blur-sm lg:hidden"
         />
       )}
 
-      {/* Main content */}
-      <div className="flex-1 min-w-0 flex flex-col min-h-screen">
-        <header className="sticky top-0 z-30 bg-white/80 backdrop-blur-xl border-b border-slate-100">
+      {/* Main */}
+      <div className="flex min-h-screen min-w-0 flex-1 flex-col">
+        <header className="sticky top-0 z-30 border-b border-slate-200/70 bg-white/75 backdrop-blur-xl">
           <div className="flex items-center justify-between px-5 py-3.5">
             <div className="flex items-center gap-3">
               <button
                 onClick={() => setSidebarOpen(true)}
-                className="lg:hidden p-2 rounded-xl hover:bg-slate-100"
+                className="rounded-xl p-2 hover:bg-slate-100 lg:hidden"
+                aria-label="Open sidebar"
               >
                 <MaterialIcon name="menu" size={20} />
               </button>
@@ -126,25 +150,40 @@ export default function LMSLayout({ children }: { children: React.ReactNode }) {
                 <MaterialIcon
                   name="search"
                   size={16}
-                  className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"
+                  className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400"
                 />
                 <input
                   type="text"
                   placeholder="Search courses, lessons..."
-                  className="w-64 pl-9 pr-4 py-2 text-sm bg-slate-50 rounded-xl border border-transparent focus:border-teal-300 focus:bg-white focus:outline-none transition-all"
+                  className="w-72 rounded-2xl border border-slate-200/80 bg-slate-50 py-2.5 pl-10 pr-4 text-sm transition-all focus:border-teal-300 focus:bg-white focus:outline-none focus:ring-4 focus:ring-teal-500/10"
                 />
               </div>
             </div>
-            <div className="flex items-center gap-3">
-              <button className="relative p-2 rounded-xl hover:bg-slate-100 transition-colors">
-                <MaterialIcon name="notifications" size={18} className="text-slate-600" />
-                <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-teal-500" />
-              </button>
+
+            <div className="flex items-center gap-2.5">
+              <div className="mr-1 hidden items-center gap-2 rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1.5 md:flex">
+                <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-emerald-500" />
+                <span className="text-[11px] font-semibold text-emerald-700">
+                  Live at 3:00 PM
+                </span>
+              </div>
+              <Link
+                href="/dashboard/notifications"
+                className="relative rounded-xl p-2.5 transition-colors hover:bg-slate-100"
+                aria-label="Notifications"
+              >
+                <MaterialIcon
+                  name="notifications"
+                  size={18}
+                  className="text-slate-600"
+                />
+                <span className="absolute right-2 top-2 h-2 w-2 rounded-full bg-teal-500 ring-2 ring-white" />
+              </Link>
               <Link
                 href="/dashboard/profile"
-                className="flex items-center gap-2.5 cursor-pointer hover:bg-slate-50 rounded-xl p-1 pr-3 transition-colors"
+                className="flex items-center gap-2.5 rounded-2xl border border-slate-200/80 bg-white p-1 pr-3 shadow-soft transition-all hover:border-teal-200 hover:shadow-card"
               >
-                <div className="w-9 h-9 rounded-xl bg-gradient-brand flex items-center justify-center text-white font-bold text-xs">
+                <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-teal-600 to-teal-800 text-xs font-bold text-white">
                   DA
                 </div>
                 <div className="hidden sm:block">
@@ -156,7 +195,7 @@ export default function LMSLayout({ children }: { children: React.ReactNode }) {
           </div>
         </header>
 
-        <main className="flex-1 p-5 sm:p-6 max-w-6xl mx-auto w-full">
+        <main className="mx-auto w-full max-w-6xl flex-1 p-5 sm:p-6 lg:p-8">
           {children}
         </main>
       </div>
