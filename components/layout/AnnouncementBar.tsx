@@ -8,7 +8,7 @@ const announcements = [
   "📅 Upcoming Workshop: Advanced Injectables & Fillers — Aug 15, 2025",
   "✅ Now Enrolling: Certificate Course in Clinical Cosmetology",
   "🌍 Students from 24+ Countries — Join the Global Community",
-  "🏆 IEB & DMHCA Affiliated Programs Available",
+  "🏆 ISO 9001 Certified & IEB Accredited Programs Available",
 ];
 
 export default function AnnouncementBar() {

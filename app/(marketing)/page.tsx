@@ -48,12 +48,12 @@ export default function HomePage() {
       <TrustedBy />
       {/* <Stats /> */}
       <AboutAcademy />
+      <Certifications />
       <FeaturedPrograms />
       <WhyChooseUs />
       <LearningJourney />
       {/* <StudentDashboardPreview /> */}
       <StudentSuccess />
-      {/* <Certifications /> */}
       <Blog />
       <FAQ />
       {/* <CTA /> */}

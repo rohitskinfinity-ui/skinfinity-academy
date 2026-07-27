@@ -2,6 +2,10 @@
 
 import { useState } from "react";
 import MaterialIcon from "@/components/shared/MaterialIcon";
+import SectionHeader from "../_components/SectionHeader";
+import Card from "../_components/Card";
+import StatusBadge from "../_components/StatusBadge";
+import FilterChips from "../_components/FilterChips";
 
 type SubmissionStatus = "pending" | "submitted" | "graded";
 
@@ -12,7 +16,7 @@ const assignments = [
     course: "Advanced Injectables",
     due: "Aug 18",
     status: "pending" as SubmissionStatus,
-    marks: null,
+    marks: null as number | null,
   },
   {
     id: 2,
@@ -40,68 +44,58 @@ const assignments = [
   },
 ];
 
-/* ── Section header helper ── */
-function SectionHeader({
-  title,
-  subtitle,
-}: {
-  title: string;
-  subtitle?: string;
-}) {
-  return (
-    <div className="mb-6">
-      <h1
-        className="text-2xl font-bold text-slate-900"
-        style={{ fontFamily: "var(--font-heading), sans-serif" }}
-      >
-        {title}
-      </h1>
-      {subtitle && <p className="text-sm text-slate-500 mt-1">{subtitle}</p>}
-    </div>
-  );
-}
+const statusIcon: Record<SubmissionStatus, { icon: string; bg: string; color: string }> = {
+  pending: { icon: "description", bg: "bg-amber-50", color: "text-amber-500" },
+  submitted: { icon: "schedule", bg: "bg-sky-50", color: "text-sky-500" },
+  graded: { icon: "check_circle", bg: "bg-emerald-50", color: "text-emerald-500" },
+};
 
 export default function AssignmentsPage() {
   const [selected, setSelected] = useState<number | null>(null);
   const [files, setFiles] = useState<string[]>([]);
+  const [filter, setFilter] = useState("all");
 
   const assignment = assignments.find((a) => a.id === selected);
 
+  const filtered =
+    filter === "all"
+      ? assignments
+      : assignments.filter((a) => a.status === filter);
+
   const handleUpload = (fileName: string) => {
-    setFiles([...files, fileName]);
+    setFiles((prev) => [...prev, fileName]);
   };
 
   if (assignment) {
+    const meta = statusIcon[assignment.status];
     return (
-      <>
+      <div>
         <button
           onClick={() => setSelected(null)}
-          className="flex items-center gap-2 text-sm font-semibold text-slate-600 hover:text-teal-600 mb-6"
+          className="mb-5 flex items-center gap-2 text-sm font-semibold text-slate-600 hover:text-teal-600"
         >
           <MaterialIcon name="arrow_back" size={16} /> Back to Assignments
         </button>
         <div className="mb-6">
+          <div className="mb-2">
+            <StatusBadge status={assignment.status} />
+          </div>
           <h1
             className="text-xl font-bold text-slate-900"
             style={{ fontFamily: "var(--font-heading), sans-serif" }}
           >
             {assignment.title}
           </h1>
-          <p className="text-sm text-slate-400 mt-1">
-            {assignment.course} • Due {assignment.due}
+          <p className="mt-1 text-sm text-slate-400">
+            {assignment.course} · Due {assignment.due}
           </p>
         </div>
-        <div className="grid lg:grid-cols-3 gap-6">
-          {/* Main */}
-          <div className="lg:col-span-2 space-y-6">
-            <div className="bg-white rounded-3xl p-6 shadow-soft border border-slate-50">
-              <h2
-                className="font-bold text-slate-900 mb-3"
-                style={{ fontFamily: "var(--font-heading), sans-serif" }}
-              >
-                Assignment Brief
-              </h2>
-              <p className="text-sm text-slate-500 leading-relaxed mb-4">
+
+        <div className="grid gap-5 lg:grid-cols-3">
+          <div className="space-y-5 lg:col-span-2">
+            <Card>
+              <h2 className="mb-3 font-bold text-slate-900">Assignment Brief</h2>
+              <p className="mb-4 text-sm leading-relaxed text-slate-500">
                 Submit a comprehensive case study on managing vascular
                 complications in aesthetic procedures. Include patient history,
                 assessment, intervention, and outcome analysis. Minimum 1500
@@ -111,191 +105,101 @@ export default function AssignmentsPage() {
                 {["PDF", "Images", "1500 words min", "Case Study"].map((t) => (
                   <span
                     key={t}
-                    className="text-xs font-semibold px-3 py-1.5 bg-slate-100 text-slate-600 rounded-full"
+                    className="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-600"
                   >
                     {t}
                   </span>
                 ))}
               </div>
-            </div>
+            </Card>
 
-            {/* Upload area */}
             {assignment.status === "pending" && (
-              <div className="bg-white rounded-3xl p-6 shadow-soft border border-slate-50">
-                <h3
-                  className="font-bold text-slate-900 mb-4"
-                  style={{ fontFamily: "var(--font-heading), sans-serif" }}
-                >
-                  Submit Your Work
-                </h3>
+              <Card>
+                <h3 className="mb-4 font-bold text-slate-900">Submit Your Work</h3>
                 <div
-                  onClick={() =>
-                    handleUpload(`document_${files.length + 1}.pdf`)
-                  }
-                  className="border-2 border-dashed border-slate-200 rounded-3xl p-8 text-center cursor-pointer hover:border-teal-400 hover:bg-teal-50/30 transition-all"
+                  onClick={() => handleUpload(`document_${files.length + 1}.pdf`)}
+                  className="cursor-pointer rounded-2xl border-2 border-dashed border-slate-200 p-8 text-center transition-all hover:border-teal-400 hover:bg-teal-50/30"
                 >
-                  <div className="w-14 h-14 rounded-2xl bg-teal-50 flex items-center justify-center mx-auto mb-3">
-                    <MaterialIcon
-                      name="upload"
-                      size={26}
-                      className="text-teal-600"
-                    />
+                  <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-xl bg-teal-50">
+                    <MaterialIcon name="upload" size={24} className="text-teal-600" />
                   </div>
                   <p className="text-sm font-semibold text-slate-700">
                     Click to upload or drag & drop
                   </p>
-                  <p className="text-xs text-slate-400 mt-1">
-                    PDF, PNG, JPG up to 10MB
-                  </p>
+                  <p className="mt-1 text-xs text-slate-400">PDF, PNG, JPG up to 10MB</p>
                 </div>
-
                 {files.length > 0 && (
                   <div className="mt-4 space-y-2">
                     {files.map((f, i) => (
                       <div
-                        key={i}
-                        className="flex items-center gap-3 p-3 rounded-xl bg-slate-50"
+                        key={f}
+                        className="flex items-center gap-3 rounded-xl bg-slate-50 p-3"
                       >
-                        <div className="w-9 h-9 rounded-lg bg-teal-100 flex items-center justify-center">
-                          <MaterialIcon
-                            name="description"
-                            size={18}
-                            className="text-teal-600"
-                          />
+                        <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-teal-100">
+                          <MaterialIcon name="description" size={18} className="text-teal-600" />
                         </div>
-                        <span className="text-sm text-slate-700 flex-1">
-                          {f}
-                        </span>
+                        <span className="flex-1 text-sm text-slate-700">{f}</span>
                         <button
-                          onClick={() =>
-                            setFiles(files.filter((_, idx) => idx !== i))
-                          }
-                          className="p-1.5 rounded-lg hover:bg-slate-200 transition-colors"
+                          onClick={() => setFiles(files.filter((_, idx) => idx !== i))}
+                          className="rounded-lg p-1.5 hover:bg-slate-200"
                         >
-                          <MaterialIcon
-                            name="close"
-                            size={16}
-                            className="text-slate-400"
-                          />
+                          <MaterialIcon name="close" size={16} className="text-slate-400" />
                         </button>
                       </div>
                     ))}
                   </div>
                 )}
-
-                <button className="w-full mt-4 py-3.5 bg-teal-600 text-white font-semibold rounded-2xl hover:bg-teal-700 transition-all">
+                <button className="mt-4 w-full rounded-xl bg-teal-600 py-3 text-sm font-semibold text-white transition-colors hover:bg-teal-700">
                   Submit Assignment
                 </button>
-              </div>
+              </Card>
             )}
 
-            {/* Feedback */}
             {assignment.status === "graded" && (
-              <div className="bg-white rounded-3xl p-6 shadow-soft border border-slate-50">
-                <div className="flex items-center gap-2 mb-4">
+              <Card>
+                <div className="mb-4 flex items-center gap-2">
                   <MaterialIcon name="forum" size={18} className="text-teal-600" />
-                  <h3
-                    className="font-bold text-slate-900"
-                    style={{ fontFamily: "var(--font-heading), sans-serif" }}
-                  >
-                    Teacher Feedback
-                  </h3>
+                  <h3 className="font-bold text-slate-900">Teacher Feedback</h3>
                 </div>
-                <div className="flex items-start gap-3 p-4 rounded-2xl bg-slate-50">
-                  <div className="w-10 h-10 rounded-full bg-teal-100 flex items-center justify-center flex-shrink-0">
-                    <span className="text-xs font-bold text-teal-700">AS</span>
+                <div className="flex items-start gap-3 rounded-xl bg-slate-50 p-4">
+                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-teal-100 text-xs font-bold text-teal-700">
+                    AS
                   </div>
                   <div>
-                    <p className="text-sm font-semibold text-slate-900">
-                      Dr. Aisha Sharma
-                    </p>
-                    <p className="text-xs text-slate-400 mb-2">2 days ago</p>
-                    <p className="text-sm text-slate-600 leading-relaxed">
+                    <p className="text-sm font-semibold text-slate-900">Dr. Aisha Sharma</p>
+                    <p className="mb-2 text-xs text-slate-400">2 days ago</p>
+                    <p className="text-sm leading-relaxed text-slate-600">
                       Excellent analysis! Your case study demonstrated strong
-                      clinical reasoning. The intervention timeline was
-                      well-documented. Consider adding more detail on
+                      clinical reasoning. Consider adding more detail on
                       post-procedure monitoring in future reports.
                     </p>
                   </div>
                 </div>
-              </div>
+              </Card>
             )}
           </div>
 
-          {/* Sidebar */}
           <div className="space-y-4">
-            <div className="bg-white rounded-3xl p-5 shadow-soft border border-slate-50">
-              <h3
-                className="font-bold text-slate-900 mb-4"
-                style={{ fontFamily: "var(--font-heading), sans-serif" }}
-              >
-                Status
-              </h3>
-              <div
-                className={`flex items-center gap-3 p-3 rounded-xl ${
-                  assignment.status === "graded"
-                    ? "bg-emerald-50"
-                    : assignment.status === "submitted"
-                    ? "bg-blue-50"
-                    : "bg-amber-50"
-                }`}
-              >
-                {assignment.status === "graded" ? (
-                  <MaterialIcon
-                    name="check_circle"
-                    size={20}
-                    className="text-emerald-500"
-                  />
-                ) : assignment.status === "submitted" ? (
-                  <MaterialIcon name="schedule" size={20} className="text-blue-500" />
-                ) : (
-                  <MaterialIcon
-                    name="schedule"
-                    size={20}
-                    className="text-amber-500"
-                  />
-                )}
+            <Card>
+              <h3 className="mb-4 font-bold text-slate-900">Status</h3>
+              <div className={`flex items-center gap-3 rounded-xl p-3 ${meta.bg}`}>
+                <MaterialIcon name={meta.icon} size={20} className={meta.color} />
                 <span className="text-sm font-semibold capitalize text-slate-700">
                   {assignment.status}
                 </span>
               </div>
               {assignment.marks !== null && (
                 <div className="mt-4 text-center">
-                  <p className="text-xs text-slate-400 mb-1">Your Score</p>
-                  <div className="flex items-center justify-center gap-1">
-                    <span
-                      className="text-3xl font-bold text-teal-600"
-                      style={{ fontFamily: "var(--font-heading), sans-serif" }}
-                    >
-                      {assignment.marks}
-                    </span>
+                  <p className="mb-1 text-xs text-slate-400">Your Score</p>
+                  <p className="text-3xl font-bold text-teal-600">
+                    {assignment.marks}
                     <span className="text-lg text-slate-400">/100</span>
-                  </div>
-                  <div className="flex items-center justify-center gap-0.5 mt-2">
-                    {[1, 2, 3, 4, 5].map((i) => (
-                      <MaterialIcon
-                        key={i}
-                        name="star"
-                        size={14}
-                        className={
-                          i <= Math.round(assignment.marks! / 20)
-                            ? "text-amber-400 fill-amber-400"
-                            : "text-slate-200"
-                        }
-                      />
-                    ))}
-                  </div>
+                  </p>
                 </div>
               )}
-            </div>
-
-            <div className="bg-white rounded-3xl p-5 shadow-soft border border-slate-50">
-              <h3
-                className="font-bold text-slate-900 mb-3"
-                style={{ fontFamily: "var(--font-heading), sans-serif" }}
-              >
-                Guidelines
-              </h3>
+            </Card>
+            <Card>
+              <h3 className="mb-3 font-bold text-slate-900">Guidelines</h3>
               <ul className="space-y-2 text-xs text-slate-500">
                 {[
                   "Submit in PDF format",
@@ -308,84 +212,66 @@ export default function AssignmentsPage() {
                     <MaterialIcon
                       name="check_circle"
                       size={14}
-                      className="text-teal-500 mt-0.5 flex-shrink-0"
+                      className="mt-0.5 shrink-0 text-teal-500"
                     />
                     {g}
                   </li>
                 ))}
               </ul>
-            </div>
+            </Card>
           </div>
         </div>
-      </>
+      </div>
     );
   }
 
   return (
-    <>
+    <div>
       <SectionHeader
         title="Assignments"
         subtitle="Manage your pending and graded course assignments."
       />
-      <div className="space-y-3">
-        {assignments.map((a) => (
-          <div
-            key={a.id}
-            onClick={() => setSelected(a.id)}
-            className="bg-white rounded-2xl p-4 shadow-soft border border-slate-50 hover:shadow-card-hover hover:-translate-y-0.5 transition-all cursor-pointer flex items-center gap-4"
-          >
-            <div
-              className={`w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0 ${
-                a.status === "graded"
-                  ? "bg-emerald-50"
-                  : a.status === "submitted"
-                  ? "bg-blue-50"
-                  : "bg-amber-50"
-              }`}
-            >
-              {a.status === "graded" ? (
-                <MaterialIcon
-                  name="check_circle"
-                  size={22}
-                  className="text-emerald-500"
-                />
-              ) : a.status === "submitted" ? (
-                <MaterialIcon name="schedule" size={22} className="text-blue-500" />
-              ) : (
-                <MaterialIcon
-                  name="description"
-                  size={22}
-                  className="text-amber-500"
-                />
-              )}
-            </div>
-            <div className="flex-1 min-w-0">
-              <p className="text-sm font-semibold text-slate-900 truncate">
-                {a.title}
-              </p>
-              <p className="text-xs text-slate-400">
-                {a.course} • Due {a.due}
-              </p>
-            </div>
-            {a.marks !== null && (
-              <span className="text-sm font-bold text-teal-600">
-                {a.marks}/100
-              </span>
-            )}
-            <span
-              className={`text-xs font-semibold px-3 py-1.5 rounded-full capitalize ${
-                a.status === "graded"
-                  ? "bg-emerald-50 text-emerald-600"
-                  : a.status === "submitted"
-                  ? "bg-blue-50 text-blue-600"
-                  : "bg-amber-50 text-amber-600"
-              }`}
-            >
-              {a.status}
-            </span>
-          </div>
-        ))}
+      <div className="mb-5">
+        <FilterChips
+          value={filter}
+          onChange={setFilter}
+          options={[
+            { id: "all", label: "All" },
+            { id: "pending", label: "Pending" },
+            { id: "submitted", label: "Submitted" },
+            { id: "graded", label: "Graded" },
+          ]}
+        />
       </div>
-    </>
+      <div className="space-y-2">
+        {filtered.map((a) => {
+          const meta = statusIcon[a.status];
+          return (
+            <button
+              key={a.id}
+              type="button"
+              onClick={() => setSelected(a.id)}
+              className="flex w-full items-center gap-4 rounded-2xl border border-slate-200/70 bg-white p-4 text-left shadow-[0_4px_20px_rgba(15,23,42,0.04)] transition-all hover:-translate-y-0.5 hover:border-teal-100 hover:shadow-[0_12px_32px_rgba(15,118,110,0.08)]"
+            >
+              <div
+                className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-xl ${meta.bg}`}
+              >
+                <MaterialIcon name={meta.icon} size={20} className={meta.color} />
+              </div>
+              <div className="min-w-0 flex-1">
+                <p className="truncate text-sm font-semibold text-slate-900">{a.title}</p>
+                <p className="text-xs text-slate-400">
+                  {a.course} · Due {a.due}
+                </p>
+              </div>
+              {a.marks !== null && (
+                <span className="text-sm font-bold text-teal-600">{a.marks}/100</span>
+              )}
+              <StatusBadge status={a.status} />
+            </button>
+          );
+        })}
+      </div>
+    </div>
   );
 }

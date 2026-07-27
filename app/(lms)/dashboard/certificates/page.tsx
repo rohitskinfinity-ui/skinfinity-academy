@@ -1,27 +1,8 @@
 "use client";
 
+import { useState } from "react";
 import MaterialIcon from "@/components/shared/MaterialIcon";
-
-/* ── Section header helper ── */
-function SectionHeader({
-  title,
-  subtitle,
-}: {
-  title: string;
-  subtitle?: string;
-}) {
-  return (
-    <div className="mb-6">
-      <h1
-        className="text-2xl font-bold text-slate-900"
-        style={{ fontFamily: "var(--font-heading), sans-serif" }}
-      >
-        {title}
-      </h1>
-      {subtitle && <p className="text-sm text-slate-500 mt-1">{subtitle}</p>}
-    </div>
-  );
-}
+import SectionHeader from "../_components/SectionHeader";
 
 const certificates = [
   {
@@ -48,35 +29,46 @@ const certificates = [
 ];
 
 export default function CertificatesPage() {
+  const [toast, setToast] = useState<string | null>(null);
+
+  const showToast = (msg: string) => {
+    setToast(msg);
+    setTimeout(() => setToast(null), 2000);
+  };
+
   return (
-    <>
+    <div>
       <SectionHeader
         title="My Certificates"
         subtitle="View and download your earned certificates."
       />
-      <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
+      {toast && (
+        <div className="mb-4 rounded-xl border border-teal-200 bg-teal-50 px-4 py-2.5 text-sm font-medium text-teal-700">
+          {toast}
+        </div>
+      )}
+      <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
         {certificates.map((cert) => (
           <div
             key={cert.id}
-            className="bg-white rounded-3xl overflow-hidden shadow-card border border-slate-50 group hover:shadow-card-hover hover:-translate-y-1 transition-all"
+            className="group overflow-hidden rounded-2xl border border-slate-200/70 bg-white shadow-[0_4px_20px_rgba(15,23,42,0.04)] transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_12px_32px_rgba(15,118,110,0.1)]"
           >
-            {/* Certificate preview */}
-            <div className="relative aspect-[4/3] bg-gradient-to-br from-teal-700 to-slate-900 p-5 overflow-hidden">
+            <div className="relative aspect-[4/3] overflow-hidden bg-gradient-to-br from-teal-700 to-slate-900 p-5">
               <div className="absolute inset-0 pattern-grid opacity-20" />
-              <div className="relative h-full flex flex-col justify-between text-white">
+              <div className="relative flex h-full flex-col justify-between text-white">
                 <div className="flex items-center gap-2">
-                  <div className="w-8 h-8 rounded-xl bg-white/15 backdrop-blur flex items-center justify-center">
+                  <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-white/15 backdrop-blur">
                     <MaterialIcon name="military_tech" size={16} />
                   </div>
                   <div>
                     <p className="text-[10px] font-bold">Skinfinity Academy</p>
-                    <p className="text-[7px] text-teal-300 tracking-widest uppercase">
+                    <p className="text-[7px] uppercase tracking-widest text-teal-300">
                       Certificate
                     </p>
                   </div>
                 </div>
                 <div>
-                  <p className="text-[8px] text-teal-300 uppercase tracking-widest mb-1">
+                  <p className="mb-1 text-[8px] uppercase tracking-widest text-teal-300">
                     Certificate of Completion
                   </p>
                   <h3
@@ -85,43 +77,43 @@ export default function CertificatesPage() {
                   >
                     {cert.title}
                   </h3>
-                  <div className="flex items-center gap-1 mt-2">
-                    <MaterialIcon
-                      name="qr_code"
-                      size={20}
-                      className="text-white/70"
-                    />
+                  <div className="mt-2 flex items-center gap-1">
+                    <MaterialIcon name="qr_code" size={18} className="text-white/70" />
                     <span className="text-[8px] text-teal-200">{cert.id}</span>
                   </div>
                 </div>
               </div>
             </div>
-
-            {/* Details */}
             <div className="p-4">
-              <div className="flex items-center justify-between mb-3">
-                <span className="text-xs font-bold text-teal-600 bg-teal-50 px-2.5 py-1 rounded-full">
+              <div className="mb-3 flex items-center justify-between">
+                <span className="rounded-full bg-teal-50 px-2.5 py-1 text-xs font-bold text-teal-600">
                   Grade: {cert.grade}
                 </span>
-                <span className="text-xs text-slate-400 flex items-center gap-1">
+                <span className="flex items-center gap-1 text-xs text-slate-400">
                   <MaterialIcon name="calendar_month" size={12} /> {cert.date}
                 </span>
               </div>
-              <p className="text-xs text-slate-500 mb-3 flex items-center gap-1.5">
+              <p className="mb-3 flex items-center gap-1.5 text-xs text-slate-500">
                 <MaterialIcon name="person" size={12} /> {cert.instructor}
               </p>
               <div className="flex gap-2">
-                <button className="flex-1 py-2.5 bg-teal-600 text-white text-xs font-semibold rounded-xl hover:bg-teal-700 transition-all flex items-center justify-center gap-1.5">
+                <button
+                  onClick={() => showToast(`Downloading ${cert.id}…`)}
+                  className="flex flex-1 items-center justify-center gap-1.5 rounded-xl bg-teal-600 py-2.5 text-xs font-semibold text-white transition-colors hover:bg-teal-700"
+                >
                   <MaterialIcon name="download" size={14} /> Download
                 </button>
-                <button className="flex-1 py-2.5 border border-slate-200 text-slate-700 text-xs font-semibold rounded-xl hover:border-teal-300 hover:text-teal-600 transition-all flex items-center justify-center gap-1.5">
-                  <MaterialIcon name="verified_user" size={14} /> Verify
+                <button
+                  onClick={() => showToast(`Verified: ${cert.id}`)}
+                  className="flex flex-1 items-center justify-center gap-1.5 rounded-xl border border-slate-200 py-2.5 text-xs font-semibold text-slate-700 transition-all hover:border-teal-300 hover:text-teal-600"
+                >
+                  <MaterialIcon name="verified" size={14} /> Verify
                 </button>
               </div>
             </div>
           </div>
         ))}
       </div>
-    </>
+    </div>
   );
 }

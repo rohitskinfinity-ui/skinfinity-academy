@@ -57,108 +57,109 @@ export default function LoginPage() {
   return (
     <div className="relative min-h-screen overflow-hidden bg-slate-950 lg:grid lg:grid-cols-2">
       {/* ── Brand panel ── */}
-      <aside className="relative hidden min-h-screen flex-col justify-between overflow-hidden p-10 xl:p-14 lg:flex">
+      <aside className="relative hidden min-h-screen flex-col overflow-hidden lg:flex">
         <Image
           src="/login.png"
           alt=""
           fill
           priority
-          className="object-cover"
+          className="object-cover object-center"
           sizes="50vw"
         />
-        <div className="absolute inset-0 bg-gradient-to-br from-teal-950/95 via-teal-900/85 to-slate-950/90" />
-        <div className="absolute -left-24 top-1/4 h-72 w-72 rounded-full bg-teal-400/20 blur-3xl" />
-        <div className="absolute -right-16 bottom-1/4 h-64 w-64 rounded-full bg-violet-500/15 blur-3xl" />
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,rgba(20,184,166,0.18),transparent_55%)]" />
+        {/* Softer overlay — image stays visible, text stays readable */}
+        <div className="absolute inset-0 bg-gradient-to-t from-teal-950/95 via-teal-900/55 to-teal-900/30" />
+        <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(15,23,42,0.55),transparent_45%)]" />
 
-        <div className="relative z-10">
-          <Link href="/" className="inline-flex items-center gap-3 group">
+        <div className="relative z-10 flex min-h-screen flex-col justify-between p-10 xl:p-12">
+          {/* Logo */}
+          <Link href="/" className="inline-flex w-fit items-center gap-3 rounded-2xl bg-white/10 px-4 py-2.5 ring-1 ring-white/15 backdrop-blur-md transition-colors hover:bg-white/15">
             <Image
               src="/logo.svg"
               alt="Skinfinity Academy"
-              width={48}
-              height={48}
-              className="h-12 w-12 object-contain drop-shadow-lg transition-transform group-hover:scale-105"
+              width={40}
+              height={40}
+              className="size-10 object-contain"
             />
             <div>
               <p
-                className="text-lg font-bold tracking-tight text-white"
+                className="text-base font-bold tracking-tight text-white"
                 style={{ fontFamily: "var(--font-heading), sans-serif" }}
               >
                 Skinfinity Academy
               </p>
-              <p className="text-[11px] font-medium uppercase tracking-[0.18em] text-teal-200/80">
+              <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-teal-200">
                 Student Portal
               </p>
             </div>
           </Link>
-        </div>
 
-        <div className="relative z-10 max-w-lg space-y-8">
-          <motion.div
-            initial={reduceMotion ? false : { opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
-          >
-            <p className="mb-3 text-xs font-semibold uppercase tracking-[0.2em] text-teal-300">
-              Welcome back
-            </p>
-            <h1
-              className="text-4xl font-bold leading-[1.15] tracking-tight text-white xl:text-5xl"
-              style={{ fontFamily: "var(--font-heading), sans-serif" }}
+          {/* Main content card */}
+          <div className="my-8 w-full max-w-md">
+            <motion.div
+              initial={reduceMotion ? false : { opacity: 0, y: 16 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+              className="rounded-[28px] bg-white/10 p-7 ring-1 ring-white/15 backdrop-blur-md xl:p-8"
             >
-              Continue your{" "}
-              <span className="bg-gradient-to-r from-teal-300 via-cyan-200 to-violet-300 bg-clip-text text-transparent">
-                clinical journey
-              </span>
-            </h1>
-            <p className="mt-4 text-base leading-relaxed text-teal-50/75">
-              Sign in to access courses, live workshops, certificates, and your
-              personalized learning dashboard.
-            </p>
-          </motion.div>
-
-          <ul className="space-y-3">
-            {highlights.map((item, i) => (
-              <motion.li
-                key={item.label}
-                initial={reduceMotion ? false : { opacity: 0, x: -12 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{
-                  delay: 0.15 + i * 0.08,
-                  duration: 0.4,
-                  ease: [0.22, 1, 0.36, 1],
-                }}
-                className="flex items-center gap-3 text-sm text-teal-50/90"
+              <p className="mb-2 inline-flex rounded-full bg-teal-500/20 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.14em] text-teal-100">
+                Welcome back
+              </p>
+              <h1
+                className="text-3xl font-bold leading-tight tracking-tight text-white xl:text-4xl"
+                style={{ fontFamily: "var(--font-heading), sans-serif" }}
               >
-                <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-white/10 text-teal-200 ring-1 ring-white/15 backdrop-blur-sm">
-                  <MaterialIcon name={item.icon} size={18} />
-                </span>
-                {item.label}
-              </motion.li>
-            ))}
-          </ul>
+                Continue your{" "}
+                <span className="text-teal-300">clinical journey</span>
+              </h1>
+              <p className="mt-3 text-sm leading-relaxed text-white/80">
+                Access your courses, workshops, certificates, and personalized
+                dashboard — all in one place.
+              </p>
 
-          <div className="grid grid-cols-3 gap-4 border-t border-white/10 pt-6">
-            {stats.map((stat) => (
-              <div key={stat.label}>
-                <p
-                  className="text-2xl font-bold text-white"
-                  style={{ fontFamily: "var(--font-heading), sans-serif" }}
-                >
-                  {stat.value}
-                </p>
-                <p className="mt-0.5 text-[11px] font-medium text-teal-200/70">
-                  {stat.label}
-                </p>
-              </div>
-            ))}
+              <ul className="mt-6 space-y-2.5">
+                {highlights.map((item, i) => (
+                  <motion.li
+                    key={item.label}
+                    initial={reduceMotion ? false : { opacity: 0, x: -10 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{
+                      delay: 0.12 + i * 0.07,
+                      duration: 0.35,
+                    }}
+                    className="flex items-center gap-3 rounded-xl bg-white/10 px-3 py-2.5 text-sm text-white/90 ring-1 ring-white/10"
+                  >
+                    <span className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-teal-600 text-white">
+                      <MaterialIcon name={item.icon} size={16} />
+                    </span>
+                    {item.label}
+                  </motion.li>
+                ))}
+              </ul>
+            </motion.div>
+          </div>
+
+          {/* Stats + footer */}
+          <div className="space-y-5">
+            <div className="flex max-w-md divide-x divide-white/15 rounded-2xl bg-white/10 ring-1 ring-white/10 backdrop-blur-md">
+              {stats.map((stat) => (
+                <div key={stat.label} className="flex-1 px-4 py-3.5 text-center">
+                  <p
+                    className="text-xl font-bold text-white"
+                    style={{ fontFamily: "var(--font-heading), sans-serif" }}
+                  >
+                    {stat.value}
+                  </p>
+                  <p className="mt-0.5 text-[10px] font-medium text-teal-100/70">
+                    {stat.label}
+                  </p>
+                </div>
+              ))}
+            </div>
+            <p className="text-xs text-white/45">
+              © {new Date().getFullYear()} Skinfinity Academy. All rights reserved.
+            </p>
           </div>
         </div>
-
-        <p className="relative z-10 text-xs text-teal-200/50">
-          © {new Date().getFullYear()} Skinfinity Academy. All rights reserved.
-        </p>
       </aside>
 
       {/* ── Auth panel ── */}
@@ -167,8 +168,7 @@ export default function LoginPage() {
           aria-hidden
           className="pointer-events-none absolute inset-0 overflow-hidden lg:hidden"
         >
-          <div className="absolute -right-20 -top-20 h-64 w-64 rounded-full bg-teal-400/20 blur-3xl" />
-          <div className="absolute -bottom-24 -left-16 h-56 w-56 rounded-full bg-violet-400/15 blur-3xl" />
+          <div className="absolute -right-20 -top-20 h-64 w-64 rounded-full bg-teal-400/15 blur-3xl" />
         </div>
 
         <header className="relative z-10 flex items-center justify-between px-6 py-5 sm:px-10 lg:px-12">

@@ -74,8 +74,12 @@ const leadership = [
 
 const accreditations = [
   {
+    name: "ISO 9001",
+    desc: "ISO 9001 certified quality management system for education and training",
+  },
+  {
     name: "IEB",
-    desc: "International Education Board — Affiliated certification authority",
+    desc: "International Education Board — Department of Aesthetic Medicine and Surgery",
   },
   {
     name: "DMHCA",
@@ -451,12 +455,12 @@ export default function AboutPage() {
               <GradientText>credentials</GradientText>
             </h2>
             <p className="section-subtitle mx-auto mt-2">
-              Our programs are aligned with the leading international bodies in
-              dermatology and cosmetology education.
+              Skinfinity Academy is ISO 9001 certified and accredited by the
+              International Education Board (IEB).
             </p>
           </div>
 
-          <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
             {accreditations.map((a, i) => (
               <FadeIn key={a.name} delay={i * 0.06}>
                 <div className="group flex h-full flex-col items-center rounded-[24px] border border-slate-200/80 bg-white p-7 text-center shadow-soft transition-all duration-300 hover:-translate-y-1 hover:shadow-card-hover">
