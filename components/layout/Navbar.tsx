@@ -11,6 +11,7 @@ import {
   SheetTrigger,
   SheetTitle,
 } from "@/components/ui/sheet";
+import { fetchCategories, fetchCourses } from "@/lib/api/public";
 
 interface CourseItem {
   name: string;
@@ -25,68 +26,29 @@ interface CourseCategory {
   courses: CourseItem[];
 }
 
-const courseCategories: CourseCategory[] = [
+const FALLBACK_CATEGORIES: CourseCategory[] = [
   {
-    id: "cosmetology",
-    title: "Clinical Cosmetology",
-    icon: "face",
+    id: "pg-diploma",
+    title: "PG Diploma",
+    icon: "workspace_premium",
     courses: [
-      { name: "Certificate in Clinical Cosmetology", slug: "certificate-clinical-cosmetology", badge: "Popular" },
-      { name: "Diploma in Clinical Cosmetology", slug: "diploma-clinical-cosmetology" },
-      { name: "PG Diploma in Medical Cosmetology", slug: "pg-diploma-cosmetology", badge: "Advanced" },
-      { name: "Chemical Peels & Skin Rejuvenation Masterclass", slug: "chemical-peels-rejuvenation" },
-      { name: "Microneedling & PRP Therapy Protocols", slug: "microneedling-prp-protocols" },
+      {
+        name: "PG Diploma in Clinical Cosmetology (PGDCC)",
+        slug: "pg-diploma-in-clinical-cosmetology",
+        badge: "Flagship",
+      },
     ],
   },
   {
-    id: "aesthetic",
-    title: "Aesthetic Medicine",
-    icon: "medical_services",
+    id: "diploma",
+    title: "Diploma",
+    icon: "school",
     courses: [
-      { name: "Fellowship in Aesthetic Medicine (FAM)", slug: "fellowship-aesthetic-dermatology", badge: "Flagship" },
-      { name: "Botulinum Toxin (Botox) Hands-on Masterclass", slug: "botox-hands-on-masterclass", badge: "Hands-on" },
-      { name: "Dermal Fillers & Lip Augmentation Workshop", slug: "advanced-injectables-fillers" },
-      { name: "Facial Anatomy & Vascular Safety for Injectors", slug: "facial-anatomy-injectables" },
-      { name: "Thread Lift Techniques (COG & Mono Threads)", slug: "thread-lift-masterclass" },
-    ],
-  },
-  {
-    id: "trichology",
-    title: "Trichology & Hair Sciences",
-    icon: "content_cut",
-    courses: [
-      { name: "Certificate in Trichology & Scalp Disorders", slug: "trichology-hair-sciences" },
-      { name: "Scalp PRP, GFC & Exosome Therapy", slug: "scalp-prp-exosomes" },
-      { name: "FUE Hair Transplant Surgical Workshop", slug: "hair-transplant-fue" },
-    ],
-  },
-  {
-    id: "lasers",
-    title: "Lasers & Energy Devices",
-    icon: "bolt",
-    courses: [
-      { name: "Laser Safety & Energy-Based Devices Certification", slug: "laser-energy-devices" },
-      { name: "Laser Hair Removal & Tattoo Removal Protocols", slug: "laser-hair-tattoo-removal" },
-      { name: "Fractional CO2 & Radiofrequency Microneedling", slug: "co2-laser-mnrf" },
-    ],
-  },
-  {
-    id: "peels",
-    title: "Chemical Peels & Anti-Aging",
-    icon: "spa",
-    courses: [
-      { name: "Advanced Chemical Peels (Glycolic, Salicylic, TCA)", slug: "advanced-peels" },
-      { name: "Non-Surgical Face Lift Protocols", slug: "non-surgical-facelift" },
-      { name: "Anti-Aging & Skin Tightening Masterclass", slug: "skin-tightening" },
-    ],
-  },
-  {
-    id: "legal",
-    title: "Medico-Legal & Practice Setup",
-    icon: "gavel",
-    courses: [
-      { name: "Aesthetic Clinic Setup & Medico-Legal Compliance", slug: "clinic-setup-legal" },
-      { name: "Patient Consultation & Consent Management", slug: "patient-consultation" },
+      {
+        name: "Diploma in Clinical Cosmetology",
+        slug: "diploma-in-clinical-cosmetology",
+        badge: "Popular",
+      },
     ],
   },
 ];
@@ -139,9 +101,47 @@ export default function Navbar() {
   const [coursesMobileOpen, setCoursesMobileOpen] = useState(false);
   const [workshopsMobileOpen, setWorkshopsMobileOpen] = useState(false);
   const [testimonialsMobileOpen, setTestimonialsMobileOpen] = useState(false);
-  const [activeCategory, setActiveCategory] = useState<string>("cosmetology");
+  const [courseCategories, setCourseCategories] =
+    useState<CourseCategory[]>(FALLBACK_CATEGORIES);
+  const [activeCategory, setActiveCategory] = useState<string>(
+    FALLBACK_CATEGORIES[0]?.id ?? "pg-diploma",
+  );
   const pathname = usePathname();
 
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const [cats, courses] = await Promise.all([
+          fetchCategories(),
+          fetchCourses({ limit: 100 }),
+        ]);
+        if (cancelled) return;
+        const mapped: CourseCategory[] = cats.map((cat) => ({
+          id: cat.slug,
+          title: cat.title,
+          icon: cat.icon || "school",
+          courses: courses.items
+            .filter((c) => c.category_slug === cat.slug)
+            .map((c) => ({
+              name: c.title,
+              slug: c.slug,
+              badge: c.is_bestseller ? "Popular" : c.tag || undefined,
+            })),
+        })).filter((cat) => cat.courses.length > 0);
+
+        if (mapped.length > 0) {
+          setCourseCategories(mapped);
+          setActiveCategory(mapped[0].id);
+        }
+      } catch {
+        /* keep fallback */
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 20);
     window.addEventListener("scroll", onScroll);

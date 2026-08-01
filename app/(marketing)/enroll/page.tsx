@@ -6,23 +6,18 @@ import Link from "next/link";
 import PageHeader from "@/components/shared/PageHeader";
 import MaterialIcon from "@/components/shared/MaterialIcon";
 import DatePicker from "@/components/ui/date-picker";
+import {
+  fetchCourses,
+  formatPrice,
+  submitApplication,
+} from "@/lib/api/public";
+import type { PublicCourseCard } from "@/lib/api/types";
 
 const fieldClass =
   "w-full px-4 py-3 bg-white border border-slate-300 rounded-xl text-sm shadow-sm focus:outline-none focus:border-teal-500 focus:ring-1 focus:ring-teal-500";
 
 const labelClass =
   "block text-[11px] font-bold uppercase tracking-wider text-slate-500 mb-1.5";
-
-const PROGRAM_FEE = 120000;
-
-const COURSES = [
-  "Fellowship in Aesthetic Dermatology",
-  "Certificate in Clinical Cosmetology",
-  "Advanced Injectables & Dermal Fillers",
-  "Trichology & Hair Sciences",
-  "Laser & Energy-Based Devices",
-  "Chemical Peels & Skin Rejuvenation",
-];
 
 const SOURCES = [
   "Instagram",
@@ -40,6 +35,21 @@ function formatINR(amount: number) {
     currency: "INR",
     maximumFractionDigits: 0,
   }).format(amount);
+}
+
+function mapGender(value: string): "female" | "male" | "other" | null {
+  const v = value.toLowerCase();
+  if (v === "female") return "female";
+  if (v === "male") return "male";
+  if (v === "other") return "other";
+  return null;
+}
+
+function mapYesNo(value: string): "yes" | "no" | null {
+  const v = value.toLowerCase();
+  if (v === "yes") return "yes";
+  if (v === "no") return "no";
+  return null;
 }
 
 function SectionTitle({ n, title }: { n: number; title: string }) {
@@ -96,12 +106,15 @@ function StepIndicator({ step }: { step: 1 | 2 }) {
 function EnrollFormContent() {
   const searchParams = useSearchParams();
   const initialProgram =
-    searchParams.get("program") ||
-    searchParams.get("title") ||
-    COURSES[0];
+    searchParams.get("program") || searchParams.get("title") || "";
 
+  const [courses, setCourses] = useState<PublicCourseCard[]>([]);
+  const [coursesLoading, setCoursesLoading] = useState(true);
   const [step, setStep] = useState<1 | 2>(1);
   const [submitted, setSubmitted] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
+  const [registrationId, setRegistrationId] = useState<string | null>(null);
   const [acceptedTerms, setAcceptedTerms] = useState(false);
   const [photoName, setPhotoName] = useState("");
   const [docName, setDocName] = useState("");
@@ -109,7 +122,7 @@ function EnrollFormContent() {
   const [formData, setFormData] = useState({
     fullName: "",
     guardianName: "",
-    course: initialProgram,
+    courseSlug: initialProgram,
     dateOfBirth: "",
     gender: "",
     highestQualification: "",
@@ -127,15 +140,52 @@ function EnrollFormContent() {
   });
 
   useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        setCoursesLoading(true);
+        const list = await fetchCourses({ limit: 100 });
+        if (cancelled) return;
+        setCourses(list.items);
+        setFormData((prev) => {
+          if (prev.courseSlug) {
+            const match = list.items.find(
+              (c) =>
+                c.slug === prev.courseSlug ||
+                c.title.toLowerCase() === prev.courseSlug.toLowerCase(),
+            );
+            if (match) return { ...prev, courseSlug: match.slug };
+          }
+          if (list.items[0]) return { ...prev, courseSlug: list.items[0].slug };
+          return prev;
+        });
+      } catch {
+        if (!cancelled) setCourses([]);
+      } finally {
+        if (!cancelled) setCoursesLoading(false);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  useEffect(() => {
     if (initialProgram) {
-      setFormData((prev) => ({ ...prev, course: initialProgram }));
+      setFormData((prev) => ({ ...prev, courseSlug: initialProgram }));
     }
   }, [initialProgram]);
 
   const update = (key: keyof typeof formData, value: string) =>
     setFormData((prev) => ({ ...prev, [key]: value }));
 
-  const payableAmount = PROGRAM_FEE;
+  const selectedCourse =
+    courses.find((c) => c.slug === formData.courseSlug) ?? null;
+  const payableAmount =
+    selectedCourse?.list_price != null
+      ? Number(selectedCourse.list_price)
+      : 0;
+  const courseTitle = selectedCourse?.title || formData.courseSlug || "Programme";
 
   if (submitted) {
     return (
@@ -147,7 +197,7 @@ function EnrollFormContent() {
           className="mb-2 text-2xl font-bold text-slate-900"
           style={{ fontFamily: "var(--font-heading), sans-serif" }}
         >
-          Payment Initiated Successfully
+          Enrollment Confirmed
         </h3>
         <p className="mx-auto mb-4 max-w-md text-sm text-slate-600">
           Thank you,{" "}
@@ -156,41 +206,46 @@ function EnrollFormContent() {
           </strong>
           ! Your reference code is{" "}
           <span className="font-mono font-bold text-teal-700">
-            #SA-ENROLL-9041
+            #{registrationId || "PENDING"}
           </span>{" "}
-          for <strong>{formData.course}</strong>.
+          for <strong>{courseTitle}</strong>. You are now enrolled.
         </p>
-        <p className="mb-2 text-sm font-semibold text-teal-700">
-          Amount paid: {formatINR(payableAmount)}
-        </p>
+        {payableAmount > 0 ? (
+          <p className="mb-2 text-sm font-semibold text-teal-700">
+            Quoted fee: {formatINR(payableAmount)}
+          </p>
+        ) : (
+          <p className="mb-2 text-sm font-semibold text-teal-700">
+            Our team will share fee details shortly.
+          </p>
+        )}
         <div className="mx-auto mb-4 flex max-w-md items-start gap-3 rounded-2xl border border-teal-200 bg-white/70 p-4 text-left">
           <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-teal-100 text-teal-700">
-            <MaterialIcon name="login" size={18} />
+            <MaterialIcon name="mail" size={18} />
           </div>
           <div>
             <p className="text-sm font-bold text-slate-900">
-              Your student account is ready
+              What happens next?
             </p>
             <p className="mt-1 text-xs leading-relaxed text-slate-600">
-              You can now log in with Google using the same email address you
-              entered during registration:{" "}
-              <strong className="text-slate-900">{formData.email}</strong>
+              Your student account is ready. We will contact you at{" "}
+              <strong className="text-slate-900">{formData.email}</strong>{" "}
+              with login details and batch schedule.
             </p>
           </div>
         </div>
         <div className="flex flex-col items-center justify-center gap-3 sm:flex-row">
           <Link
-            href="/login"
+            href="/courses"
             className="inline-flex items-center justify-center gap-2 rounded-xl bg-teal-600 px-8 py-3.5 text-sm font-bold text-white shadow-md transition-all hover:bg-teal-700"
           >
-            <MaterialIcon name="login" size={16} />
-            LOGIN NOW
+            BACK TO COURSES
           </Link>
           <Link
-            href="/courses"
+            href="/contact"
             className="inline-flex items-center justify-center gap-2 rounded-xl border border-slate-300 bg-white px-8 py-3.5 text-sm font-bold text-slate-700 transition-all hover:border-teal-300 hover:text-teal-700"
           >
-            BACK TO COURSES &gt;
+            CONTACT ADMISSIONS
           </Link>
         </div>
       </div>
@@ -210,7 +265,7 @@ function EnrollFormContent() {
         rows: [
           ["Full Name", formData.fullName],
           ["Father's / Husband's Name", formData.guardianName],
-          ["Course", formData.course],
+          ["Course", courseTitle],
           ["Date of Birth", formatDob(formData.dateOfBirth)],
           ["Gender", formData.gender],
           ["Photo", photoName || "—"],
@@ -305,7 +360,7 @@ function EnrollFormContent() {
           <div className="flex justify-between text-sm">
             <span className="text-slate-600">Program fee (full payment)</span>
             <span className="font-semibold text-slate-800">
-              {formatINR(PROGRAM_FEE)}
+              {formatINR(payableAmount)}
             </span>
           </div>
           <div className="flex items-center justify-between border-t border-teal-200 pt-3">
@@ -327,13 +382,60 @@ function EnrollFormContent() {
           </button>
           <button
             type="button"
-            onClick={() => setSubmitted(true)}
-            className="flex flex-1 items-center justify-center gap-2 rounded-xl bg-teal-600 px-8 py-3.5 text-sm font-bold text-white shadow-md transition-all hover:bg-teal-700"
+            disabled={submitting}
+            onClick={async () => {
+              try {
+                setSubmitting(true);
+                setSubmitError(null);
+                const result = await submitApplication({
+                  full_name: formData.fullName,
+                  guardian_name: formData.guardianName || null,
+                  course_slug: formData.courseSlug || null,
+                  course_preference: courseTitle,
+                  date_of_birth: formData.dateOfBirth || null,
+                  gender: mapGender(formData.gender),
+                  highest_qualification:
+                    formData.highestQualification || null,
+                  profession: formData.profession || null,
+                  medical_background: mapYesNo(formData.medicalBackground),
+                  registration_no: formData.registrationNo || null,
+                  currently_working: mapYesNo(formData.currentlyWorking),
+                  whatsapp: formData.whatsapp,
+                  alternate_no: formData.alternateNo || null,
+                  email: formData.email,
+                  address: formData.address || null,
+                  city_state: formData.cityState || null,
+                  pin_code: formData.pinCode || null,
+                  source: formData.source || null,
+                  quoted_price: payableAmount > 0 ? payableAmount : null,
+                  currency: selectedCourse?.currency || "INR",
+                  accepted_terms: acceptedTerms,
+                });
+                setRegistrationId(result.registration_id);
+                setSubmitted(true);
+              } catch (err) {
+                setSubmitError(
+                  err instanceof Error
+                    ? err.message
+                    : "Failed to complete enrollment",
+                );
+              } finally {
+                setSubmitting(false);
+              }
+            }}
+            className="flex flex-1 items-center justify-center gap-2 rounded-xl bg-teal-600 px-8 py-3.5 text-sm font-bold text-white shadow-md transition-all hover:bg-teal-700 disabled:opacity-60"
           >
-            CHECKOUT · {formatINR(payableAmount)}
-            <MaterialIcon name="lock" size={16} />
+            {submitting
+              ? "ENROLLING…"
+              : payableAmount > 0
+                ? `ENROLL · ${formatINR(payableAmount)}`
+                : "COMPLETE ENROLLMENT"}
+            <MaterialIcon name="send" size={16} />
           </button>
         </div>
+        {submitError ? (
+          <p className="mt-3 text-center text-sm text-red-600">{submitError}</p>
+        ) : null}
       </div>
     );
   }
@@ -378,15 +480,25 @@ function EnrollFormContent() {
             <label className={labelClass}>Select Course *</label>
             <select
               required
-              value={formData.course}
-              onChange={(e) => update("course", e.target.value)}
+              value={formData.courseSlug}
+              onChange={(e) => update("courseSlug", e.target.value)}
               className={`${fieldClass} text-slate-700`}
+              disabled={coursesLoading || courses.length === 0}
             >
-              {COURSES.map((c) => (
-                <option key={c} value={c}>
-                  {c}
-                </option>
-              ))}
+              {coursesLoading ? (
+                <option value="">Loading courses…</option>
+              ) : courses.length === 0 ? (
+                <option value="">No courses available</option>
+              ) : (
+                courses.map((c) => (
+                  <option key={c.slug} value={c.slug}>
+                    {c.title}
+                    {c.list_price != null
+                      ? ` · ${formatPrice(c.list_price, c.currency)}`
+                      : ""}
+                  </option>
+                ))
+              )}
             </select>
           </div>
           <div>
@@ -408,9 +520,9 @@ function EnrollFormContent() {
               className={`${fieldClass} text-slate-700`}
             >
               <option value="">Select</option>
-              <option value="Female">Female</option>
-              <option value="Male">Male</option>
-              <option value="Other">Other</option>
+              <option value="female">Female</option>
+              <option value="male">Male</option>
+              <option value="other">Other</option>
             </select>
           </div>
           <div>
@@ -423,7 +535,6 @@ function EnrollFormContent() {
               <input
                 type="file"
                 accept="image/*"
-                required
                 className="sr-only"
                 onChange={(e) =>
                   setPhotoName(e.target.files?.[0]?.name || "")
@@ -720,8 +831,8 @@ export default function EnrollPage() {
                   {[
                     {
                       icon: "verified_user",
-                      title: "Board Review",
-                      desc: "Application reviewed within 24 hours",
+                      title: "Instant Enrollment",
+                      desc: "Your seat is confirmed as soon as you submit",
                     },
                     {
                       icon: "medical_services",

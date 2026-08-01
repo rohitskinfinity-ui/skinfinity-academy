@@ -4,6 +4,10 @@ export type VideoKind = "lecture" | "ai_procedure" | "clinical";
 
 export type StageStatus = "locked" | "available" | "in_progress" | "completed";
 
+export type VideoPlatform = "zoom" | "google_meet";
+
+export type RecordingStatus = "pending" | "processing" | "ready" | "failed";
+
 export type VideoLesson = {
   id: string;
   title: string;
@@ -11,6 +15,8 @@ export type VideoLesson = {
   kind: VideoKind;
   instructor?: string;
   done?: boolean;
+  /** Set when video was published from a live-class recording. */
+  sourceEventId?: string;
 };
 
 export type Booklet = {
@@ -65,6 +71,22 @@ export type StudentCourse = {
   treatments: EnrolledTreatment[];
 };
 
+export type EventAttachment = {
+  id: string;
+  fileName: string;
+  fileUrl: string;
+  mimeType?: string;
+  sizeLabel?: string;
+};
+
+export type EventQuiz = {
+  id: string;
+  title: string;
+  passPercent: number;
+  isRequired: boolean;
+  questionCount: number;
+};
+
 export type LiveSession = {
   id: string;
   title: string;
@@ -72,11 +94,26 @@ export type LiveSession = {
   date: string;
   time: string;
   duration: string;
-  status: "live" | "upcoming";
+  status: "live" | "upcoming" | "completed";
   attendees: number;
-  meetUrl: string;
+  platform: VideoPlatform;
+  meetingUrl: string;
   driveUrl?: string;
   bookletLabel?: string;
+  /** Required for live classes — recording publishes into this treatment folder. */
+  treatmentId: string;
+  /** Zoom recording pipeline status (completed classes). */
+  recordingStatus?: RecordingStatus;
+  /** treatment_videos.id once recording is published (only when ready). */
+  recordingVideoId?: string;
+  recordingTitle?: string;
+  /** iCal RRULE when part of a recurring series (weekly / alternate-day). */
+  recurrenceRule?: string;
+  seriesId?: string;
+  attachments?: EventAttachment[];
+  /** Optional post-class quiz (separate from treatment theory quiz). */
+  quiz?: EventQuiz;
+  quizAttemptPassed?: boolean;
 };
 
 export type PracticalAssignment = {

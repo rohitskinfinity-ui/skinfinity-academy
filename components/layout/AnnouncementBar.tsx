@@ -1,18 +1,38 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import MaterialIcon from "@/components/shared/MaterialIcon";
+import { fetchSite } from "@/lib/api/public";
 
-const announcements = [
-  "🎓 Admissions Open for Fellowship in Aesthetic Dermatology — Batch 2025",
-  "📅 Upcoming Workshop: Advanced Injectables & Fillers — Aug 15, 2025",
-  "✅ Now Enrolling: Certificate Course in Clinical Cosmetology",
-  "🌍 Students from 24+ Countries — Join the Global Community",
-  "🏆 ISO 9001 Certified & IEB Accredited Programs Available",
+const FALLBACK = [
+  "Admissions open for Diploma & PG Diploma in Clinical Cosmetology",
+  "Live lectures every week with hands-on clinical training",
+  "Skinfinity Academy — physician education in aesthetic medicine",
 ];
 
 export default function AnnouncementBar() {
   const [visible, setVisible] = useState(true);
+  const [announcements, setAnnouncements] = useState<string[]>(FALLBACK);
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const site = await fetchSite();
+        if (cancelled) return;
+        const messages = (site.announcements ?? [])
+          .map((a) => a.message)
+          .filter(Boolean);
+        if (messages.length > 0) setAnnouncements(messages);
+      } catch {
+        /* keep fallback */
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
   if (!visible) return null;
 
   const track = [...announcements, ...announcements];
@@ -24,7 +44,7 @@ export default function AnnouncementBar() {
           <div className="marquee-track flex whitespace-nowrap">
             {track.map((msg, i) => (
               <span
-                key={i}
+                key={`${msg}-${i}`}
                 className="inline-flex items-center gap-1 px-8 font-medium"
               >
                 {msg}

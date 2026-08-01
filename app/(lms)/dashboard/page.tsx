@@ -303,7 +303,7 @@ export default function DashboardOverviewPage() {
             </p>
             <p className="mt-1 text-xs text-slate-500">
               {liveNow
-                ? `${liveNow.time} · ${liveNow.duration} · Google Meet`
+                ? `${liveNow.time} · ${liveNow.duration} · Zoom`
                 : "Weekly · ~1 hour"}
             </p>
             <span className="mt-4 inline-flex items-center gap-1 text-xs font-semibold text-teal-700">
