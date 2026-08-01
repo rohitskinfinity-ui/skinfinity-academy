@@ -1,115 +1,123 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import PageHeader from "@/components/shared/PageHeader";
 import MaterialIcon from "@/components/shared/MaterialIcon";
 import Link from "next/link";
+import {
+  PLACEHOLDER_AVATAR,
+  fetchTestimonials,
+} from "@/lib/api/public";
+import type { PublicTestimonial } from "@/lib/api/types";
 
-const videoReviews = [
-  {
-    id: 1,
-    doctor: "Dr. Ananya Sharma",
-    title: "MD Dermatology, AIIMS Delhi",
-    course: "Advanced Injectables & Dermal Fillers",
-    location: "New Delhi, India",
-    thumbnail: "https://images.unsplash.com/photo-1559839734-2b71ea197ec2?auto=format&fit=crop&w=800&q=80",
-    quote: "The hands-on patient ratio was outstanding. I performed lip augmentations under 1:1 specialist supervision on Day 1.",
-    duration: "2:45",
-  },
-  {
-    id: 2,
-    doctor: "Dr. Rajesh Kulkarni",
-    title: "Plastic & Reconstructive Surgeon",
-    course: "Laser & Energy Devices Mastery",
-    location: "Mumbai, India",
-    thumbnail: "https://images.unsplash.com/photo-1622253692010-333f2da6031d?auto=format&fit=crop&w=800&q=80",
-    quote: "Learning Alexandrite & Nd:YAG laser physics with live patient settings transformed my clinical confidence completely.",
-    duration: "3:10",
-  },
-  {
-    id: 3,
-    doctor: "Dr. Meera Nambiar",
-    title: "Cosmetic Dermatologist",
-    course: "PG Diploma in Clinical Cosmetology",
-    location: "Bengaluru, India",
-    thumbnail: "https://images.unsplash.com/photo-1594824813570-78988072613d?auto=format&fit=crop&w=800&q=80",
-    quote: "Skinfinity gave me full confidence to open my own aesthetic clinic in Indiranagar. The IEB & DMHCA affiliated certification is internationally recognized.",
-    duration: "4:05",
-  },
-];
+type VideoCard = {
+  id: string;
+  doctor: string;
+  title: string;
+  course: string;
+  location: string;
+  thumbnail: string;
+  quote: string;
+  duration: string;
+  videoUrl: string | null;
+};
 
-const writtenReviews = [
-  {
-    id: 1,
-    doctor: "Dr. Siddharth Menon",
-    credentials: "MBBS, DVD (Dermatology)",
-    location: "Hyderabad",
-    course: "Botulinum Toxin & Upper Face Contouring",
-    rating: 5,
-    date: "July 2025",
-    text: "Exceeded all my expectations. The faculty broke down complex facial anatomy and dangerous vascular danger zones with extreme clarity. Practicing on live patient cases with 1:1 guidance made all the difference.",
-    clinic: "Founder, Zenith Aesthetics Clinic",
-  },
-  {
-    id: 2,
-    doctor: "Dr. Priya Deshmukh",
-    credentials: "BDS, Fellowship in Aesthetic Dentistry",
-    location: "Pune",
-    course: "Certificate in Clinical Cosmetology",
-    rating: 5,
-    date: "June 2025",
-    text: "As a dentist transitioning into facial aesthetics, Skinfinity provided the most supportive learning environment. The chemical peel and RF microneedling modules were thorough and hands-on.",
-    clinic: "Aura Dental & Aesthetic Hub",
-  },
-  {
-    id: 3,
-    doctor: "Dr. Aris Thorne",
-    credentials: "MD, Aesthetic Practitioner",
-    location: "Dubai, UAE",
-    course: "Advanced Injectables & Dermal Fillers",
-    rating: 5,
-    date: "May 2025",
-    text: "Flew down from Dubai specifically for this clinical masterclass. The practical exposure to tear trough and cheek augmentation using cannulas was world class.",
-    clinic: "Harley Street Medical Center, Dubai",
-  },
-  {
-    id: 4,
-    doctor: "Dr. Kavita Reddy",
-    credentials: "MD General Medicine",
-    location: "Chennai",
-    course: "Trichology & Hair Sciences Fellowship",
-    rating: 5,
-    date: "April 2025",
-    text: "The PRP extraction and GFC protocols were explained with solid scientific backing. I integrated trichology procedures into my practice within 2 weeks of completion.",
-    clinic: "Reddy Skin & Hair Clinic",
-  },
-  {
-    id: 5,
-    doctor: "Dr. Vikram Sethi",
-    credentials: "MS General Surgery",
-    location: "Chandigarh",
-    course: "COG Thread Lift Masterclass",
-    rating: 5,
-    date: "March 2025",
-    text: "Sensational PDO thread lifting course! Understanding vector angles for midface lifting under expert supervision was worth every penny.",
-    clinic: "Sethi Cosmetic Surgery Institute",
-  },
-  {
-    id: 6,
-    doctor: "Dr. Sunita Rao",
-    credentials: "MBBS, DDVL",
-    location: "Kolkata",
-    course: "Chemical Peels & Skin Rejuvenation",
-    rating: 5,
-    date: "February 2025",
-    text: "The step-by-step guidance on deep TCA peels and managing post-inflammatory hyperpigmentation gave me immense peace of mind in my practice.",
-    clinic: "DermaCare Aesthetics",
-  },
-];
+type WrittenCard = {
+  id: string;
+  doctor: string;
+  credentials: string;
+  location: string;
+  course: string;
+  rating: number;
+  date: string;
+  text: string;
+  clinic: string;
+};
+
+function formatReviewDate(value: string | null) {
+  if (!value) return "";
+  const d = new Date(value);
+  if (Number.isNaN(d.getTime())) return String(value).slice(0, 10);
+  return d.toLocaleDateString("en-US", { month: "long", year: "numeric" });
+}
+
+function mapVideo(t: PublicTestimonial): VideoCard {
+  return {
+    id: t.id,
+    doctor: t.person_name,
+    title: t.credentials || t.role || "Doctor Alumni",
+    course: t.course_label || "Skinfinity Academy",
+    location: t.location || "",
+    thumbnail: t.thumbnail_url || t.image_url || PLACEHOLDER_AVATAR,
+    quote: t.quote,
+    duration: t.video_duration || "",
+    videoUrl: t.video_url,
+  };
+}
+
+function mapWritten(t: PublicTestimonial): WrittenCard {
+  const ratingRaw = t.rating == null ? 5 : Number(t.rating);
+  return {
+    id: t.id,
+    doctor: t.person_name,
+    credentials: t.credentials || t.role || "",
+    location: t.location || "",
+    course: t.course_label || "",
+    rating: Number.isFinite(ratingRaw) ? Math.round(ratingRaw) : 5,
+    date: formatReviewDate(t.review_date),
+    text: t.quote,
+    clinic: t.company || t.role || "",
+  };
+}
+
+function isDirectVideo(url: string | null) {
+  if (!url) return false;
+  return /\.(mp4|webm|ogg)(\?|$)/i.test(url);
+}
 
 export default function TestimonialsPage() {
   const [activeTab, setActiveTab] = useState<"all" | "video" | "reviews">("all");
-  const [selectedVideo, setSelectedVideo] = useState<typeof videoReviews[0] | null>(null);
+  const [selectedVideo, setSelectedVideo] = useState<VideoCard | null>(null);
+  const [videoReviews, setVideoReviews] = useState<VideoCard[]>([]);
+  const [writtenReviews, setWrittenReviews] = useState<WrittenCard[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      setLoading(true);
+      setError(null);
+      try {
+        const [videos, texts] = await Promise.all([
+          fetchTestimonials({ type: "video", limit: 50 }),
+          fetchTestimonials({ type: "text", limit: 50 }),
+        ]);
+        if (cancelled) return;
+        setVideoReviews((videos.items ?? []).map(mapVideo));
+        setWrittenReviews((texts.items ?? []).map(mapWritten));
+      } catch (err) {
+        if (cancelled) return;
+        setError(
+          err instanceof Error ? err.message : "Failed to load testimonials",
+        );
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const avgRating = useMemo(() => {
+    const ratings = writtenReviews
+      .map((r) => r.rating)
+      .filter((n) => Number.isFinite(n) && n > 0);
+    if (!ratings.length) return null;
+    const avg = ratings.reduce((a, b) => a + b, 0) / ratings.length;
+    return avg.toFixed(1);
+  }, [writtenReviews]);
 
   return (
     <div>
@@ -120,14 +128,14 @@ export default function TestimonialsPage() {
         breadcrumb="Testimonials"
       />
 
-      {/* Filter Tabs */}
-      <section className="py-8 bg-slate-50 border-b border-slate-200/60 sticky top-20 z-30 shadow-xs">
+      <section className="sticky top-20 z-30 border-b border-slate-200/60 bg-slate-50 py-8 shadow-xs">
         <div className="container-max px-4 sm:px-6 lg:px-8">
           <div className="flex flex-wrap items-center justify-between gap-4">
-            <div className="flex items-center gap-2 p-1.5 bg-slate-200/70 rounded-2xl">
+            <div className="flex items-center gap-2 rounded-2xl bg-slate-200/70 p-1.5">
               <button
+                type="button"
                 onClick={() => setActiveTab("all")}
-                className={`px-5 py-2 rounded-xl text-xs font-bold transition-all ${
+                className={`rounded-xl px-5 py-2 text-xs font-bold transition-all ${
                   activeTab === "all"
                     ? "bg-white text-teal-700 shadow-sm"
                     : "text-slate-600 hover:text-slate-900"
@@ -136,8 +144,9 @@ export default function TestimonialsPage() {
                 All Feedback
               </button>
               <button
+                type="button"
                 onClick={() => setActiveTab("video")}
-                className={`px-5 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 ${
+                className={`flex items-center gap-1.5 rounded-xl px-5 py-2 text-xs font-bold transition-all ${
                   activeTab === "video"
                     ? "bg-white text-teal-700 shadow-sm"
                     : "text-slate-600 hover:text-slate-900"
@@ -147,8 +156,9 @@ export default function TestimonialsPage() {
                 Video Reviews
               </button>
               <button
+                type="button"
                 onClick={() => setActiveTab("reviews")}
-                className={`px-5 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 ${
+                className={`flex items-center gap-1.5 rounded-xl px-5 py-2 text-xs font-bold transition-all ${
                   activeTab === "reviews"
                     ? "bg-white text-teal-700 shadow-sm"
                     : "text-slate-600 hover:text-slate-900"
@@ -161,27 +171,49 @@ export default function TestimonialsPage() {
 
             <div className="flex items-center gap-4 text-xs font-semibold text-slate-600">
               <span className="flex items-center gap-1">
-                <MaterialIcon name="star" size={16} className="text-amber-500 fill-amber-500" />
-                4.9 / 5.0 Rating (3,200+ Reviews)
+                <MaterialIcon
+                  name="star"
+                  size={16}
+                  className="fill-amber-500 text-amber-500"
+                />
+                {avgRating
+                  ? `${avgRating} / 5.0 Rating (${writtenReviews.length} Reviews)`
+                  : "Verified Doctor Alumni"}
               </span>
-              <span className="hidden sm:inline-block w-1 h-1 rounded-full bg-slate-300" />
-              <span className="hidden sm:inline-block text-teal-700">100% Verified Doctor Alumni</span>
+              <span className="hidden h-1 w-1 rounded-full bg-slate-300 sm:inline-block" />
+              <span className="hidden text-teal-700 sm:inline-block">
+                100% Verified Doctor Alumni
+              </span>
             </div>
           </div>
         </div>
       </section>
 
-      {/* Video Reviews Section */}
-      {(activeTab === "all" || activeTab === "video") && (
-        <section id="video-reviews" className="py-16 bg-white border-b border-slate-100">
+      {error ? (
+        <div className="container-max px-4 py-16 text-center text-sm text-rose-600 sm:px-6 lg:px-8">
+          {error}
+        </div>
+      ) : null}
+
+      {loading ? (
+        <div className="container-max px-4 py-16 text-center text-sm text-slate-500 sm:px-6 lg:px-8">
+          Loading testimonials…
+        </div>
+      ) : null}
+
+      {!loading && (activeTab === "all" || activeTab === "video") && (
+        <section
+          id="video-reviews"
+          className="border-b border-slate-100 bg-white py-16"
+        >
           <div className="container-max px-4 sm:px-6 lg:px-8">
-            <div className="flex items-end justify-between mb-10">
+            <div className="mb-10 flex items-end justify-between">
               <div>
-                <span className="text-xs font-bold uppercase tracking-widest text-teal-600 bg-teal-50 px-3 py-1 rounded-full border border-teal-100">
+                <span className="rounded-full border border-teal-100 bg-teal-50 px-3 py-1 text-xs font-bold tracking-widest text-teal-600 uppercase">
                   Video Feedback
                 </span>
                 <h2
-                  className="text-2xl sm:text-3xl font-extrabold text-slate-900 mt-2"
+                  className="mt-2 text-2xl font-extrabold text-slate-900 sm:text-3xl"
                   style={{ fontFamily: "var(--font-heading), sans-serif" }}
                 >
                   Doctor Video Testimonials
@@ -189,191 +221,255 @@ export default function TestimonialsPage() {
               </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-              {videoReviews.map((v) => (
-                <div
-                  key={v.id}
-                  className="bg-white rounded-3xl border border-slate-200/80 shadow-card hover:shadow-card-hover transition-all duration-300 overflow-hidden group flex flex-col justify-between"
-                >
-                  <div className="relative aspect-video bg-slate-900 overflow-hidden cursor-pointer" onClick={() => setSelectedVideo(v)}>
-                    <img
-                      src={v.thumbnail}
-                      alt={v.doctor}
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 opacity-90"
-                    />
-                    <div className="absolute inset-0 bg-slate-950/30 group-hover:bg-slate-950/20 transition-all flex items-center justify-center">
-                      <div className="w-14 h-14 rounded-full bg-teal-600 text-white flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
-                        <MaterialIcon name="play_arrow" size={28} />
-                      </div>
-                    </div>
-                    <span className="absolute bottom-3 right-3 bg-slate-950/80 text-white text-[11px] font-bold px-2 py-0.5 rounded-md backdrop-blur-xs">
-                      {v.duration}
-                    </span>
-                  </div>
-
-                  <div className="p-6 flex-1 flex flex-col justify-between">
-                    <div>
-                      <p className="text-xs font-bold text-teal-600 uppercase tracking-wider mb-1">
-                        {v.course}
-                      </p>
-                      <h3
-                        className="text-lg font-bold text-slate-900"
-                        style={{ fontFamily: "var(--font-heading), sans-serif" }}
-                      >
-                        {v.doctor}
-                      </h3>
-                      <p className="text-xs text-slate-500 font-medium mb-3">{v.title} • {v.location}</p>
-                      <p className="text-xs text-slate-600 italic leading-relaxed bg-slate-50 p-3 rounded-2xl border border-slate-100">
-                        "{v.quote}"
-                      </p>
-                    </div>
-
-                    <button
+            {!videoReviews.length ? (
+              <p className="text-sm text-slate-500">
+                No video testimonials published yet.
+              </p>
+            ) : (
+              <div className="grid grid-cols-1 gap-8 md:grid-cols-3">
+                {videoReviews.map((v) => (
+                  <div
+                    key={v.id}
+                    className="group flex flex-col justify-between overflow-hidden rounded-3xl border border-slate-200/80 bg-white shadow-card transition-all duration-300 hover:shadow-card-hover"
+                  >
+                    <div
+                      className="relative aspect-video cursor-pointer overflow-hidden bg-slate-900"
                       onClick={() => setSelectedVideo(v)}
-                      className="mt-4 w-full py-2.5 bg-teal-50 hover:bg-teal-100/80 text-teal-700 text-xs font-bold rounded-xl transition-colors flex items-center justify-center gap-1.5"
                     >
-                      <MaterialIcon name="play_circle" size={16} />
-                      Watch Doctor Interview
-                    </button>
+                      <img
+                        src={v.thumbnail}
+                        alt={v.doctor}
+                        className="h-full w-full object-cover opacity-90 transition-transform duration-500 group-hover:scale-105"
+                      />
+                      <div className="absolute inset-0 flex items-center justify-center bg-slate-950/30 transition-all group-hover:bg-slate-950/20">
+                        <div className="flex h-14 w-14 items-center justify-center rounded-full bg-teal-600 text-white shadow-lg transition-transform group-hover:scale-110">
+                          <MaterialIcon name="play_arrow" size={28} />
+                        </div>
+                      </div>
+                      {v.duration ? (
+                        <span className="absolute right-3 bottom-3 rounded-md bg-slate-950/80 px-2 py-0.5 text-[11px] font-bold text-white backdrop-blur-xs">
+                          {v.duration}
+                        </span>
+                      ) : null}
+                    </div>
+
+                    <div className="flex flex-1 flex-col justify-between p-6">
+                      <div>
+                        <p className="mb-1 text-xs font-bold tracking-wider text-teal-600 uppercase">
+                          {v.course}
+                        </p>
+                        <h3
+                          className="text-lg font-bold text-slate-900"
+                          style={{
+                            fontFamily: "var(--font-heading), sans-serif",
+                          }}
+                        >
+                          {v.doctor}
+                        </h3>
+                        <p className="mb-3 text-xs font-medium text-slate-500">
+                          {v.title}
+                          {v.location ? ` • ${v.location}` : ""}
+                        </p>
+                        <p className="rounded-2xl border border-slate-100 bg-slate-50 p-3 text-xs leading-relaxed text-slate-600 italic">
+                          &ldquo;{v.quote}&rdquo;
+                        </p>
+                      </div>
+
+                      <button
+                        type="button"
+                        onClick={() => setSelectedVideo(v)}
+                        className="mt-4 flex w-full items-center justify-center gap-1.5 rounded-xl bg-teal-50 py-2.5 text-xs font-bold text-teal-700 transition-colors hover:bg-teal-100/80"
+                      >
+                        <MaterialIcon name="play_circle" size={16} />
+                        Watch Doctor Interview
+                      </button>
+                    </div>
                   </div>
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
+            )}
           </div>
         </section>
       )}
 
-      {/* Written Reviews Section */}
-      {(activeTab === "all" || activeTab === "reviews") && (
-        <section id="reviews" className="py-16 bg-slate-50">
+      {!loading && (activeTab === "all" || activeTab === "reviews") && (
+        <section id="reviews" className="bg-slate-50 py-16">
           <div className="container-max px-4 sm:px-6 lg:px-8">
             <div className="mb-10">
-              <span className="text-xs font-bold uppercase tracking-widest text-teal-600 bg-teal-50 px-3 py-1 rounded-full border border-teal-100">
+              <span className="rounded-full border border-teal-100 bg-teal-50 px-3 py-1 text-xs font-bold tracking-widest text-teal-600 uppercase">
                 Verified Reviews
               </span>
               <h2
-                className="text-2xl sm:text-3xl font-extrabold text-slate-900 mt-2"
+                className="mt-2 text-2xl font-extrabold text-slate-900 sm:text-3xl"
                 style={{ fontFamily: "var(--font-heading), sans-serif" }}
               >
                 What Doctors Say About Our Training
               </h2>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {writtenReviews.map((r) => (
-                <div
-                  key={r.id}
-                  className="bg-white rounded-3xl p-6 border border-slate-200/80 shadow-soft hover:shadow-card-hover transition-all duration-300 flex flex-col justify-between"
-                >
-                  <div>
-                    <div className="flex items-center justify-between mb-3">
-                      <div className="flex items-center gap-1">
-                        {[...Array(r.rating)].map((_, i) => (
-                          <MaterialIcon key={i} name="star" size={16} className="text-amber-500 fill-amber-500" />
-                        ))}
-                      </div>
-                      <span className="text-[11px] font-semibold text-slate-400">{r.date}</span>
-                    </div>
-
-                    <p className="text-xs sm:text-sm text-slate-700 leading-relaxed mb-4">
-                      "{r.text}"
-                    </p>
-                  </div>
-
-                  <div className="pt-4 border-t border-slate-100 flex items-center justify-between">
+            {!writtenReviews.length ? (
+              <p className="text-sm text-slate-500">
+                No written reviews published yet.
+              </p>
+            ) : (
+              <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
+                {writtenReviews.map((r) => (
+                  <div
+                    key={r.id}
+                    className="flex flex-col justify-between rounded-3xl border border-slate-200/80 bg-white p-6 shadow-soft transition-all duration-300 hover:shadow-card-hover"
+                  >
                     <div>
-                      <h4
-                        className="text-sm font-bold text-slate-900"
-                        style={{ fontFamily: "var(--font-heading), sans-serif" }}
-                      >
-                        {r.doctor}
-                      </h4>
-                      <p className="text-[11px] text-teal-600 font-semibold">{r.credentials}</p>
-                      <p className="text-[10px] text-slate-400 font-medium">{r.clinic} • {r.location}</p>
+                      <div className="mb-3 flex items-center justify-between">
+                        <div className="flex items-center gap-1">
+                          {[...Array(Math.max(1, Math.min(5, r.rating)))].map(
+                            (_, i) => (
+                              <MaterialIcon
+                                key={i}
+                                name="star"
+                                size={16}
+                                className="fill-amber-500 text-amber-500"
+                              />
+                            ),
+                          )}
+                        </div>
+                        {r.date ? (
+                          <span className="text-[11px] font-semibold text-slate-400">
+                            {r.date}
+                          </span>
+                        ) : null}
+                      </div>
+
+                      <p className="mb-4 text-xs leading-relaxed text-slate-700 sm:text-sm">
+                        &ldquo;{r.text}&rdquo;
+                      </p>
                     </div>
-                    <div className="w-8 h-8 rounded-full bg-teal-50 text-teal-600 flex items-center justify-center flex-shrink-0">
-                      <MaterialIcon name="verified" size={18} />
+
+                    <div className="flex items-center justify-between border-t border-slate-100 pt-4">
+                      <div>
+                        <h4
+                          className="text-sm font-bold text-slate-900"
+                          style={{
+                            fontFamily: "var(--font-heading), sans-serif",
+                          }}
+                        >
+                          {r.doctor}
+                        </h4>
+                        {r.credentials ? (
+                          <p className="text-[11px] font-semibold text-teal-600">
+                            {r.credentials}
+                          </p>
+                        ) : null}
+                        <p className="text-[10px] font-medium text-slate-400">
+                          {[r.clinic, r.location].filter(Boolean).join(" • ")}
+                        </p>
+                      </div>
+                      <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-teal-50 text-teal-600">
+                        <MaterialIcon name="verified" size={18} />
+                      </div>
                     </div>
                   </div>
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
+            )}
           </div>
         </section>
       )}
 
-      {/* Video Modal Player */}
       {selectedVideo && (
-        <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4">
-          <div className="relative w-full max-w-3xl bg-slate-900 rounded-3xl overflow-hidden shadow-2xl border border-slate-800">
-            <div className="p-4 bg-slate-950 flex items-center justify-between text-white border-b border-slate-800">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 p-4 backdrop-blur-md">
+          <div className="relative w-full max-w-3xl overflow-hidden rounded-3xl border border-slate-800 bg-slate-900 shadow-2xl">
+            <div className="flex items-center justify-between border-b border-slate-800 bg-slate-950 p-4 text-white">
               <div className="flex items-center gap-3">
-                <MaterialIcon name="videocam" size={20} className="text-teal-400" />
+                <MaterialIcon
+                  name="videocam"
+                  size={20}
+                  className="text-teal-400"
+                />
                 <div>
                   <h4 className="text-sm font-bold">{selectedVideo.doctor}</h4>
-                  <p className="text-[11px] text-slate-400">{selectedVideo.course}</p>
+                  <p className="text-[11px] text-slate-400">
+                    {selectedVideo.course}
+                  </p>
                 </div>
               </div>
               <button
+                type="button"
                 onClick={() => setSelectedVideo(null)}
-                className="w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center transition-colors"
+                className="flex h-8 w-8 items-center justify-center rounded-full bg-white/10 text-white transition-colors hover:bg-white/20"
               >
                 <MaterialIcon name="close" size={20} />
               </button>
             </div>
 
-            <div className="relative aspect-video bg-black flex items-center justify-center">
-              <img
-                src={selectedVideo.thumbnail}
-                alt={selectedVideo.doctor}
-                className="w-full h-full object-cover opacity-80"
-              />
-              <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 p-6 text-center bg-slate-950/40">
-                <div className="w-16 h-16 rounded-full bg-teal-600 text-white flex items-center justify-center shadow-2xl animate-pulse">
-                  <MaterialIcon name="play_arrow" size={36} />
+            <div className="relative aspect-video bg-black">
+              {selectedVideo.videoUrl && isDirectVideo(selectedVideo.videoUrl) ? (
+                <video
+                  src={selectedVideo.videoUrl}
+                  controls
+                  autoPlay
+                  className="h-full w-full object-contain"
+                  poster={selectedVideo.thumbnail}
+                />
+              ) : selectedVideo.videoUrl ? (
+                <iframe
+                  src={selectedVideo.videoUrl}
+                  title={selectedVideo.doctor}
+                  className="h-full w-full"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                  allowFullScreen
+                />
+              ) : (
+                <div className="relative flex h-full items-center justify-center">
+                  <img
+                    src={selectedVideo.thumbnail}
+                    alt={selectedVideo.doctor}
+                    className="h-full w-full object-cover opacity-80"
+                  />
+                  <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-slate-950/40 p-6 text-center">
+                    <p className="max-w-md text-sm font-bold text-white">
+                      &ldquo;{selectedVideo.quote}&rdquo;
+                    </p>
+                    <span className="text-xs font-semibold text-teal-300">
+                      Video URL not set yet
+                    </span>
+                  </div>
                 </div>
-                <p className="text-sm text-white font-bold max-w-md">
-                  "{selectedVideo.quote}"
-                </p>
-                <span className="text-xs text-teal-300 font-semibold">
-                  Skinfinity Academy Verified Video Interview
-                </span>
-              </div>
+              )}
             </div>
           </div>
         </div>
       )}
 
-      {/* CTA Footer Banner */}
-      <section className="py-16 bg-white">
+      <section className="bg-white py-16">
         <div className="container-max px-4 sm:px-6 lg:px-8">
-          <div className="bg-slate-900 rounded-3xl p-8 sm:p-12 text-white border border-slate-800 shadow-card flex flex-col md:flex-row items-center justify-between gap-8">
+          <div className="flex flex-col items-center justify-between gap-8 rounded-3xl border border-slate-800 bg-slate-900 p-8 text-white shadow-card sm:p-12 md:flex-row">
             <div className="max-w-xl">
-              <span className="text-xs font-bold uppercase tracking-widest text-teal-400 bg-teal-500/10 border border-teal-500/20 px-3.5 py-1.5 rounded-full inline-block mb-3">
+              <span className="mb-3 inline-block rounded-full border border-teal-500/20 bg-teal-500/10 px-3.5 py-1.5 text-xs font-bold tracking-widest text-teal-400 uppercase">
                 Join 12,000+ Enrolled Doctors
               </span>
               <h3
-                className="text-2xl sm:text-3xl font-extrabold"
+                className="text-2xl font-extrabold sm:text-3xl"
                 style={{ fontFamily: "var(--font-heading), sans-serif" }}
               >
                 Ready to elevate your clinical practice?
               </h3>
-              <p className="text-slate-300 text-sm sm:text-base mt-2">
-                Enroll in hands-on clinical masterclasses and master high-demand aesthetic procedures.
+              <p className="mt-2 text-sm text-slate-300 sm:text-base">
+                Enroll in hands-on clinical masterclasses and master high-demand
+                aesthetic procedures.
               </p>
             </div>
 
-            <div className="flex flex-col sm:flex-row gap-3 w-full md:w-auto flex-shrink-0">
+            <div className="flex w-full flex-shrink-0 flex-col gap-3 sm:flex-row md:w-auto">
               <Link
                 href="/courses"
-                className="px-6 py-3.5 bg-teal-600 hover:bg-teal-700 text-white font-bold text-sm rounded-2xl transition-all shadow-teal flex items-center justify-center gap-2"
+                className="shadow-teal flex items-center justify-center gap-2 rounded-2xl bg-teal-600 px-6 py-3.5 text-sm font-bold text-white transition-all hover:bg-teal-700"
               >
                 Explore All Courses
                 <MaterialIcon name="arrow_forward" size={16} />
               </Link>
               <Link
                 href="/contact"
-                className="px-6 py-3.5 bg-white/10 hover:bg-white/15 text-white font-bold text-sm rounded-2xl border border-white/20 transition-all flex items-center justify-center gap-2"
+                className="flex items-center justify-center gap-2 rounded-2xl border border-white/20 bg-white/10 px-6 py-3.5 text-sm font-bold text-white transition-all hover:bg-white/15"
               >
                 Book Advisory Call
               </Link>

@@ -2,10 +2,12 @@ import { publicFetch } from "./client";
 import type {
   Paginated,
   PublicBlogPost,
+  PublicCalendarCourse,
   PublicCategory,
   PublicCourseCard,
   PublicCourseDetail,
   PublicEvent,
+  PublicHomeReviewsResponse,
   PublicTestimonial,
   SubmitApplicationBody,
   SubmitContactBody,
@@ -88,6 +90,27 @@ export async function fetchEvents(params?: {
   const qs = sp.toString();
   return publicFetch<Paginated<PublicEvent>>(
     `/events${qs ? `?${qs}` : ""}`,
+  );
+}
+
+export async function fetchCalendarCourses(params?: {
+  status?: "upcoming" | "ongoing" | "all";
+  search?: string;
+  from?: string;
+  to?: string;
+  page?: number;
+  limit?: number;
+}) {
+  const sp = new URLSearchParams();
+  if (params?.status) sp.set("status", params.status);
+  if (params?.search) sp.set("search", params.search);
+  if (params?.from) sp.set("from", params.from);
+  if (params?.to) sp.set("to", params.to);
+  if (params?.page) sp.set("page", String(params.page));
+  if (params?.limit) sp.set("limit", String(params.limit));
+  const qs = sp.toString();
+  return publicFetch<Paginated<PublicCalendarCourse>>(
+    `/calendar${qs ? `?${qs}` : ""}`,
   );
 }
 
@@ -189,6 +212,16 @@ export async function fetchTestimonials(params?: {
   const qs = sp.toString();
   return publicFetch<Paginated<PublicTestimonial>>(
     `/testimonials${qs ? `?${qs}` : ""}`,
+  );
+}
+
+/** Featured written reviews for the marketing homepage. */
+export async function fetchHomeReviews(params?: { limit?: number }) {
+  const sp = new URLSearchParams();
+  if (params?.limit) sp.set("limit", String(params.limit));
+  const qs = sp.toString();
+  return publicFetch<PublicHomeReviewsResponse>(
+    `/reviews${qs ? `?${qs}` : ""}`,
   );
 }
 

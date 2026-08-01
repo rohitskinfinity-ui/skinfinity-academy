@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import {
@@ -13,9 +13,15 @@ import {
   X,
 } from "lucide-react";
 import Calendar from "@/components/ui/calendar";
+import {
+  PLACEHOLDER_COURSE_IMAGE,
+  fetchCalendarCourses,
+  formatPrice,
+} from "@/lib/api/public";
+import type { PublicCalendarCourse } from "@/lib/api/types";
 import { cn } from "@/lib/utils";
 
-interface EventItem {
+type CalendarCard = {
   id: string;
   dateIso: string;
   day: string;
@@ -23,156 +29,138 @@ interface EventItem {
   year: string;
   category: string;
   title: string;
+  subtitle: string | null;
   location: string;
-  venue: string;
-  time: string;
-  instructor: string;
-  seatsLeft: number;
+  dateRange: string;
+  instructor: string | null;
+  seatsLeft: number | null;
   image: string;
   price: string;
   slug: string;
+  status: "upcoming" | "ongoing";
+};
+
+function formatParts(iso: string | null | undefined) {
+  if (!iso) {
+    return { dateIso: "", day: "—", month: "", year: "" };
+  }
+  const dateIso = String(iso).slice(0, 10);
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) {
+    return {
+      dateIso,
+      day: dateIso.slice(8, 10),
+      month: "",
+      year: dateIso.slice(0, 4),
+    };
+  }
+  return {
+    dateIso,
+    day: d.toLocaleDateString("en-GB", { day: "2-digit" }),
+    month: d.toLocaleDateString("en-GB", { month: "short" }).toUpperCase(),
+    year: d.toLocaleDateString("en-GB", { year: "numeric" }),
+  };
 }
 
-const scheduleEvents: EventItem[] = [
-  {
-    id: "1",
-    dateIso: "2025-08-15",
-    day: "15",
-    month: "AUG",
-    year: "2025",
-    category: "Hands-on Workshop",
-    title: "Advanced Injectables & Lip Augmentation Masterclass",
-    location: "Bengaluru",
-    venue: "Skinfinity Clinical Campus, MG Road",
-    time: "10:00 AM - 04:00 PM",
-    instructor: "Dr. Priya Menon (MD)",
-    seatsLeft: 3,
-    image:
-      "https://images.pexels.com/photos/4226119/pexels-photo-4226119.jpeg?auto=compress&cs=tinysrgb&w=800",
-    price: "₹15,000",
-    slug: "advanced-injectables-fillers",
-  },
-  {
-    id: "2",
-    dateIso: "2025-08-22",
-    day: "22",
-    month: "AUG",
-    year: "2025",
-    category: "Clinical Course",
-    title: "Certificate in Clinical Cosmetology & Chemical Peels",
-    location: "Mumbai",
-    venue: "Medanta Health Center, Bandra West",
-    time: "09:30 AM - 05:00 PM",
-    instructor: "Dr. Rajesh Kumar (MD)",
-    seatsLeft: 5,
-    image:
-      "https://images.pexels.com/photos/4173251/pexels-photo-4173251.jpeg?auto=compress&cs=tinysrgb&w=800",
-    price: "₹65,000",
-    slug: "certificate-clinical-cosmetology",
-  },
-  {
-    id: "3",
-    dateIso: "2025-09-05",
-    day: "05",
-    month: "SEP",
-    year: "2025",
-    category: "Laser Masterclass",
-    title: "Laser Safety & Energy-Based Devices Hands-On Training",
-    location: "Delhi",
-    venue: "Apollo Hospitals Campus, Sarita Vihar",
-    time: "10:00 AM - 03:30 PM",
-    instructor: "Dr. Neha Gupta (MD)",
-    seatsLeft: 4,
-    image:
-      "https://images.pexels.com/photos/4226140/pexels-photo-4226140.jpeg?auto=compress&cs=tinysrgb&w=800",
-    price: "₹28,000",
-    slug: "laser-energy-devices",
-  },
-  {
-    id: "4",
-    dateIso: "2025-09-12",
-    day: "12",
-    month: "SEP",
-    year: "2025",
-    category: "Fellowship Module",
-    title: "Trichology, Scalp PRP & Hair Transplant Fundamentals",
-    location: "Hyderabad",
-    venue: "KIMS Hospital Medical Center, Jubilee Hills",
-    time: "10:00 AM - 04:00 PM",
-    instructor: "Dr. Vikram Singh (FISHRS)",
-    seatsLeft: 2,
-    image:
-      "https://images.pexels.com/photos/3992854/pexels-photo-3992854.jpeg?auto=compress&cs=tinysrgb&w=800",
-    price: "₹38,000",
-    slug: "trichology-hair-sciences",
-  },
-  {
-    id: "5",
-    dateIso: "2025-09-20",
-    day: "20",
-    month: "SEP",
-    year: "2025",
-    category: "Live Demo & Lab",
-    title: "Chemical Peels Formulation & Post-Peel Care Protocols",
-    location: "Bengaluru",
-    venue: "Skinfinity Clinical Campus, MG Road",
-    time: "01:00 PM - 05:00 PM",
-    instructor: "Dr. Arjun Reddy (MD)",
-    seatsLeft: 6,
-    image:
-      "https://images.pexels.com/photos/6621339/pexels-photo-6621339.jpeg?auto=compress&cs=tinysrgb&w=800",
-    price: "₹12,000",
-    slug: "chemical-peels-rejuvenation",
-  },
-  {
-    id: "6",
-    dateIso: "2025-10-02",
-    day: "02",
-    month: "OCT",
-    year: "2025",
-    category: "Hybrid Webinar",
-    title: "Vascular Occlusion Safety & Emergency Management",
-    location: "Online",
-    venue: "Live Zoom Interactive HD Stream",
-    time: "06:00 PM - 08:30 PM",
-    instructor: "Dr. Aisha Sharma (MD)",
-    seatsLeft: 15,
-    image:
-      "https://images.pexels.com/photos/7088530/pexels-photo-7088530.jpeg?auto=compress&cs=tinysrgb&w=800",
-    price: "₹4,999",
-    slug: "advanced-injectables-fillers",
-  },
-];
+function formatDateRange(from: string | null, to: string | null) {
+  if (!from) return "Dates TBA";
+  const start = new Date(from);
+  const end = to ? new Date(to) : start;
+  if (Number.isNaN(start.getTime())) return "Dates TBA";
+  const opts: Intl.DateTimeFormatOptions = {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+  };
+  if (Number.isNaN(end.getTime()) || start.toDateString() === end.toDateString()) {
+    return start.toLocaleDateString("en-GB", opts);
+  }
+  return `${start.toLocaleDateString("en-GB", opts)} – ${end.toLocaleDateString("en-GB", opts)}`;
+}
+
+function mapCourse(course: PublicCalendarCourse): CalendarCard {
+  const start = course.starts_on || course.starts_at;
+  const end = course.ends_on ?? course.ends_at;
+  const parts = formatParts(start);
+  const category =
+    course.category_label || course.tag || course.level || course.mode || "Course";
+  return {
+    id: course.id,
+    dateIso: parts.dateIso,
+    day: parts.day,
+    month: parts.month,
+    year: parts.year,
+    category,
+    title: course.title,
+    subtitle: course.next_event_title,
+    location: course.location || course.venue || "Campus TBA",
+    dateRange: formatDateRange(start, end),
+    instructor: course.instructor_name,
+    seatsLeft: course.seats_left,
+    image: course.image_url || PLACEHOLDER_COURSE_IMAGE,
+    price: formatPrice(course.list_price, course.currency),
+    slug: course.slug,
+    status: course.status,
+  };
+}
 
 export default function UpcomingSchedule() {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedDate, setSelectedDate] = useState("");
   const [calendarOpen, setCalendarOpen] = useState(false);
+  const [items, setItems] = useState<CalendarCard[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  const filteredEvents = useMemo(() => {
-    return scheduleEvents.filter((event) => {
-      const matchesDate =
-        !selectedDate ||
-        event.dateIso === selectedDate ||
-        event.dateIso.startsWith(selectedDate);
-
-      const query = searchQuery.toLowerCase().trim();
-      const matchesQuery =
-        !query ||
-        event.title.toLowerCase().includes(query) ||
-        event.category.toLowerCase().includes(query) ||
-        event.instructor.toLowerCase().includes(query) ||
-        event.location.toLowerCase().includes(query);
-
-      return matchesDate && matchesQuery;
-    });
-  }, [selectedDate, searchQuery]);
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      setLoading(true);
+      setError(null);
+      try {
+        const res = await fetchCalendarCourses({ status: "all", limit: 50 });
+        if (cancelled) return;
+        setItems((res.items ?? []).map(mapCourse));
+      } catch (err) {
+        if (cancelled) return;
+        setError(
+          err instanceof Error ? err.message : "Failed to load calendar",
+        );
+        setItems([]);
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   const clearFilters = () => {
     setSearchQuery("");
     setSelectedDate("");
     setCalendarOpen(false);
   };
+
+  const visible = useMemo(() => {
+    return items.filter((event) => {
+      const dateOk =
+        !selectedDate ||
+        event.dateIso === selectedDate ||
+        event.dateIso.startsWith(selectedDate);
+
+      const query = searchQuery.toLowerCase().trim();
+      const queryOk =
+        !query ||
+        event.title.toLowerCase().includes(query) ||
+        (event.subtitle || "").toLowerCase().includes(query) ||
+        event.category.toLowerCase().includes(query) ||
+        (event.instructor || "").toLowerCase().includes(query) ||
+        event.location.toLowerCase().includes(query);
+
+      return dateOk && queryOk;
+    });
+  }, [items, selectedDate, searchQuery]);
 
   return (
     <section
@@ -182,22 +170,21 @@ export default function UpcomingSchedule() {
       <div className="container-max relative z-10 px-4 sm:px-6 lg:px-8">
         <div className="mb-8 max-w-2xl">
           <span className="section-tag mb-3 inline-flex">
-            Live Clinical Calendar 2025–2026
+            Course calendar
           </span>
           <h2
             className="text-3xl font-bold tracking-tight text-slate-900 sm:text-4xl"
             style={{ fontFamily: "var(--font-heading), sans-serif" }}
           >
-            Upcoming training sessions &{" "}
-            <span className="text-teal-700">workshops</span>
+            Upcoming & ongoing{" "}
+            <span className="text-teal-700">courses</span>
           </h2>
           <p className="mt-2 text-base text-slate-500 sm:text-lg">
-            Filter by keyword or date to find the next hands-on clinical
-            masterclass near you.
+            Browse published courses with upcoming or ongoing sessions. Filter
+            by keyword or start date.
           </p>
         </div>
 
-        {/* Filter bar */}
         <div className="mb-8 rounded-[24px] border border-slate-200/80 bg-[#f8fafc] p-4 sm:p-5">
           <div className="grid gap-3 md:grid-cols-12 md:items-end">
             <div className="md:col-span-6">
@@ -237,7 +224,7 @@ export default function UpcomingSchedule() {
                   "flex w-full items-center justify-between rounded-2xl border bg-white px-4 py-3 text-sm font-semibold transition-all",
                   selectedDate
                     ? "border-teal-500 text-teal-700"
-                    : "border-slate-200 text-slate-700 hover:border-teal-300"
+                    : "border-slate-200 text-slate-700 hover:border-teal-300",
                 )}
               >
                 <span className="flex items-center gap-2 truncate">
@@ -275,22 +262,33 @@ export default function UpcomingSchedule() {
 
         <div className="mb-5 flex items-center justify-between px-0.5">
           <p className="text-xs font-semibold text-slate-500">
-            Showing{" "}
-            <span className="font-bold text-teal-700">
-              {filteredEvents.length}
-            </span>{" "}
-            session{filteredEvents.length !== 1 ? "s" : ""}
-            {selectedDate ? ` on ${selectedDate}` : ""}
+            {loading ? (
+              "Loading courses…"
+            ) : (
+              <>
+                Showing{" "}
+                <span className="font-bold text-teal-700">{visible.length}</span>{" "}
+                course{visible.length !== 1 ? "s" : ""}
+                {selectedDate ? ` on ${selectedDate}` : ""}
+              </>
+            )}
           </p>
         </div>
 
-        {filteredEvents.length > 0 ? (
+        {error ? (
+          <div className="rounded-[24px] border border-rose-200 bg-rose-50 px-6 py-10 text-center text-sm text-rose-700">
+            {error}
+          </div>
+        ) : loading ? (
+          <div className="rounded-[24px] border border-slate-200 bg-[#f8fafc] px-6 py-14 text-center text-sm text-slate-500">
+            Loading courses…
+          </div>
+        ) : visible.length > 0 ? (
           <ol className="space-y-3">
-            {filteredEvents.map((item) => (
+            {visible.map((item) => (
               <li key={item.id}>
                 <article className="group overflow-hidden rounded-[20px] border border-slate-200/80 bg-white transition-all duration-300 hover:border-teal-200 hover:shadow-[0_12px_32px_rgba(15,118,110,0.1)]">
                   <div className="flex flex-col gap-3 p-3 sm:flex-row sm:items-center sm:gap-4 sm:p-3.5">
-                    {/* Date */}
                     <div className="flex shrink-0 items-center gap-3 sm:w-[88px] sm:flex-col sm:items-center sm:justify-center sm:gap-0.5 sm:rounded-2xl sm:bg-teal-50 sm:px-2 sm:py-3">
                       <div className="flex items-baseline gap-1.5 sm:flex-col sm:items-center sm:gap-0">
                         <span
@@ -310,7 +308,6 @@ export default function UpcomingSchedule() {
                       </span>
                     </div>
 
-                    {/* Image in front of course name */}
                     <div className="relative hidden h-16 w-24 shrink-0 overflow-hidden rounded-xl sm:block">
                       <Image
                         src={item.image}
@@ -321,7 +318,6 @@ export default function UpcomingSchedule() {
                       />
                     </div>
 
-                    {/* Course details */}
                     <div className="min-w-0 flex-1">
                       <div className="mb-1 flex flex-wrap items-center gap-2">
                         <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-slate-500">
@@ -330,14 +326,26 @@ export default function UpcomingSchedule() {
                         </span>
                         <span
                           className={cn(
-                            "rounded-full px-2 py-0.5 text-[10px] font-bold",
-                            item.seatsLeft <= 3
-                              ? "bg-rose-50 text-rose-600"
-                              : "bg-teal-50 text-teal-700"
+                            "rounded-full px-2 py-0.5 text-[10px] font-bold capitalize",
+                            item.status === "ongoing"
+                              ? "bg-amber-50 text-amber-700"
+                              : "bg-sky-50 text-sky-700",
                           )}
                         >
-                          {item.seatsLeft} seats left
+                          {item.status}
                         </span>
+                        {item.seatsLeft != null ? (
+                          <span
+                            className={cn(
+                              "rounded-full px-2 py-0.5 text-[10px] font-bold",
+                              item.seatsLeft <= 3
+                                ? "bg-rose-50 text-rose-600"
+                                : "bg-teal-50 text-teal-700",
+                            )}
+                          >
+                            {item.seatsLeft} seats left
+                          </span>
+                        ) : null}
                       </div>
 
                       <h3
@@ -348,20 +356,26 @@ export default function UpcomingSchedule() {
                       >
                         {item.title}
                       </h3>
+                      {item.subtitle ? (
+                        <p className="truncate text-xs text-slate-500">
+                          {item.subtitle}
+                        </p>
+                      ) : null}
 
                       <div className="mt-1 flex flex-wrap gap-x-3 gap-y-1 text-[11px] text-slate-500">
                         <span className="inline-flex items-center gap-1">
                           <Clock className="size-3 text-slate-400" />
-                          {item.time}
+                          {item.dateRange}
                         </span>
-                        <span className="inline-flex items-center gap-1">
-                          <User className="size-3 text-slate-400" />
-                          {item.instructor}
-                        </span>
+                        {item.instructor ? (
+                          <span className="inline-flex items-center gap-1">
+                            <User className="size-3 text-slate-400" />
+                            {item.instructor}
+                          </span>
+                        ) : null}
                       </div>
                     </div>
 
-                    {/* Price + CTA */}
                     <div className="flex shrink-0 items-center justify-between gap-3 border-t border-slate-100 pt-3 sm:border-t-0 sm:pt-0 sm:pl-2">
                       <div className="sm:text-right">
                         <p className="text-[9px] font-bold uppercase tracking-wider text-slate-400">
@@ -394,10 +408,10 @@ export default function UpcomingSchedule() {
           <div className="rounded-[24px] border border-slate-200 bg-[#f8fafc] px-6 py-14 text-center">
             <CalendarDays className="mx-auto mb-3 size-10 text-slate-300" />
             <h3 className="text-lg font-bold text-slate-900">
-              No sessions match your filters
+              No courses match your filters
             </h3>
             <p className="mt-1 text-sm text-slate-500">
-              Try another date or clear your search.
+              Set a start date on a published course to list it here.
             </p>
             <button
               type="button"

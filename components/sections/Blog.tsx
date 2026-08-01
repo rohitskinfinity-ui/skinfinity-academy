@@ -9,6 +9,7 @@ import { Stagger, StaggerItem } from "@/components/motion/Stagger";
 import { fetchBlog, PLACEHOLDER_COURSE_IMAGE } from "@/lib/api/public";
 
 type BlogCard = {
+  id: string;
   category: string;
   title: string;
   excerpt: string;
@@ -19,22 +20,9 @@ type BlogCard = {
   href: string;
 };
 
-const FALLBACK: BlogCard[] = [
-  {
-    category: "Updates",
-    title: "Clinical Cosmetology programmes now open",
-    excerpt:
-      "Explore our Diploma and PG Diploma pathways designed for medical practitioners.",
-    image: PLACEHOLDER_COURSE_IMAGE,
-    author: "Skinfinity Academy",
-    date: "Coming soon",
-    readTime: "3 min",
-    href: "/blog",
-  },
-];
-
 export default function Blog() {
-  const [blogs, setBlogs] = useState<BlogCard[]>(FALLBACK);
+  const [blogs, setBlogs] = useState<BlogCard[]>([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     let cancelled = false;
@@ -42,9 +30,9 @@ export default function Blog() {
       try {
         const list = await fetchBlog({ limit: 3 });
         if (cancelled) return;
-        if (list.items.length === 0) return;
         setBlogs(
-          list.items.map((p) => ({
+          (list.items ?? []).map((p) => ({
+            id: p.id,
             category: p.category_name || "Insights",
             title: p.title,
             excerpt: p.excerpt || "",
@@ -64,7 +52,9 @@ export default function Blog() {
           })),
         );
       } catch {
-        /* keep fallback */
+        if (!cancelled) setBlogs([]);
+      } finally {
+        if (!cancelled) setLoading(false);
       }
     })();
     return () => {
@@ -97,44 +87,54 @@ export default function Blog() {
           </Link>
         </FadeIn>
 
-        <Stagger className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-          {blogs.map((post) => (
-            <StaggerItem key={post.href}>
-              <Link
-                href={post.href}
-                className="group flex h-full flex-col overflow-hidden rounded-3xl border border-slate-100 bg-white shadow-sm transition-shadow hover:shadow-lg"
-              >
-                <div className="relative aspect-[16/10] overflow-hidden">
-                  <Image
-                    src={post.image}
-                    alt={post.title}
-                    fill
-                    sizes="(max-width: 768px) 100vw, 33vw"
-                    className="object-cover transition-transform duration-500 group-hover:scale-105"
-                  />
-                </div>
-                <div className="flex flex-1 flex-col p-5">
-                  <span className="mb-2 text-[10px] font-bold uppercase tracking-wider text-teal-600">
-                    {post.category}
-                  </span>
-                  <h3 className="mb-2 text-base font-bold text-slate-900 group-hover:text-teal-700">
-                    {post.title}
-                  </h3>
-                  <p className="mb-4 line-clamp-2 flex-1 text-sm text-slate-500">
-                    {post.excerpt}
-                  </p>
-                  <div className="flex items-center justify-between text-xs text-slate-400">
-                    <span>{post.author}</span>
-                    <span className="inline-flex items-center gap-1">
-                      <Clock className="size-3.5" />
-                      {post.readTime}
-                    </span>
+        {loading ? (
+          <p className="py-10 text-center text-sm text-slate-400">
+            Loading articles…
+          </p>
+        ) : blogs.length === 0 ? (
+          <p className="py-10 text-center text-sm text-slate-400">
+            No published articles yet. Check back soon.
+          </p>
+        ) : (
+          <Stagger className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            {blogs.map((post) => (
+              <StaggerItem key={post.id}>
+                <Link
+                  href={post.href}
+                  className="group flex h-full flex-col overflow-hidden rounded-3xl border border-slate-100 bg-white shadow-sm transition-shadow hover:shadow-lg"
+                >
+                  <div className="relative aspect-[16/10] overflow-hidden">
+                    <Image
+                      src={post.image}
+                      alt={post.title}
+                      fill
+                      sizes="(max-width: 768px) 100vw, 33vw"
+                      className="object-cover transition-transform duration-500 group-hover:scale-105"
+                    />
                   </div>
-                </div>
-              </Link>
-            </StaggerItem>
-          ))}
-        </Stagger>
+                  <div className="flex flex-1 flex-col p-5">
+                    <span className="mb-2 text-[10px] font-bold uppercase tracking-wider text-teal-600">
+                      {post.category}
+                    </span>
+                    <h3 className="mb-2 text-base font-bold text-slate-900 group-hover:text-teal-700">
+                      {post.title}
+                    </h3>
+                    <p className="mb-4 line-clamp-2 flex-1 text-sm text-slate-500">
+                      {post.excerpt}
+                    </p>
+                    <div className="flex items-center justify-between text-xs text-slate-400">
+                      <span>{post.author}</span>
+                      <span className="inline-flex items-center gap-1">
+                        <Clock className="size-3.5" />
+                        {post.readTime}
+                      </span>
+                    </div>
+                  </div>
+                </Link>
+              </StaggerItem>
+            ))}
+          </Stagger>
+        )}
       </div>
     </section>
   );

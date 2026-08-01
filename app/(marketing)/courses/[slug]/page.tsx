@@ -43,6 +43,19 @@ function BulletList({ items }: { items: string[] }) {
   );
 }
 
+function formatCourseDate(value: string | null | undefined) {
+  if (!value) return null;
+  const d = new Date(
+    value.includes("T") ? value : `${value.slice(0, 10)}T12:00:00`
+  );
+  if (Number.isNaN(d.getTime())) return null;
+  return d.toLocaleDateString("en-GB", {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+  });
+}
+
 function ReviewsCarousel({ reviews }: { reviews: PublicCourseReview[] }) {
   const scrollerRef = useRef<HTMLDivElement>(null);
   const [canPrev, setCanPrev] = useState(false);
@@ -116,19 +129,27 @@ function ReviewsCarousel({ reviews }: { reviews: PublicCourseReview[] }) {
               className="w-[240px] shrink-0 snap-start rounded-xl border border-slate-100 bg-slate-50/80 p-3.5 sm:w-[260px]"
             >
               {rating != null && !Number.isNaN(rating) ? (
-                <div className="mb-2 flex items-center gap-0.5">
-                  {Array.from({ length: 5 }).map((_, i) => (
-                    <MaterialIcon
-                      key={i}
-                      name={i < Math.round(rating) ? "star" : "star_border"}
-                      size={14}
-                      className={
-                        i < Math.round(rating)
-                          ? "text-amber-400"
-                          : "text-slate-300"
-                      }
-                    />
-                  ))}
+                <div
+                  className="mb-2 flex items-center gap-0.5"
+                  aria-label={`${rating.toFixed(1)} out of 5 stars`}
+                >
+                  {Array.from({ length: 5 }).map((_, i) => {
+                    const fullStars = Math.floor(rating);
+                    const hasHalf = rating - fullStars >= 0.25;
+                    const isFull = i < fullStars;
+                    const isHalf = !isFull && hasHalf && i === fullStars;
+                    return (
+                      <MaterialIcon
+                        key={i}
+                        name={isHalf ? "star_half" : "star"}
+                        size={14}
+                        filled={isFull || isHalf}
+                        className={
+                          isFull || isHalf ? "text-amber-400" : "text-slate-300"
+                        }
+                      />
+                    );
+                  })}
                   <span className="ml-1 text-[11px] font-semibold text-slate-500">
                     {rating.toFixed(1)}
                   </span>
@@ -490,41 +511,59 @@ export default function CourseDetailPage() {
                 </Link>
 
                 <div className="mt-6 space-y-3 border-t border-slate-100 pt-6">
-                  {[
-                    {
-                      icon: "schedule",
-                      label: "Duration",
-                      value: course.duration_label || "—",
-                    },
-                    {
-                      icon: "desktop_windows",
-                      label: "Mode",
-                      value: formatMode(course.mode),
-                    },
-                    {
-                      icon: "workspace_premium",
-                      label: "Certificate",
-                      value: course.certificate_label || "Certificate",
-                    },
-                    {
-                      icon: "category",
-                      label: "Category",
-                      value: course.category_title || "Programme",
-                    },
-                    {
-                      icon: "star",
-                      label: "Rating",
-                      value:
-                        course.rating != null
-                          ? `${Number(course.rating).toFixed(1)} / 5.0`
-                          : "—",
-                    },
-                    {
-                      icon: "view_module",
-                      label: "Modules",
-                      value: String(course.modules.length),
-                    },
-                  ].map((item) => (
+                  {(
+                    [
+                      {
+                        icon: "event",
+                        label: "Start date",
+                        value: formatCourseDate(course.starts_on) || "TBA",
+                      },
+                      {
+                        icon: "schedule",
+                        label: "Duration",
+                        value: course.duration_label || "—",
+                      },
+                      {
+                        icon: "desktop_windows",
+                        label: "Mode",
+                        value: formatMode(course.mode),
+                      },
+                      {
+                        icon: "workspace_premium",
+                        label: "Certificate",
+                        value: course.certificate_label || "Certificate",
+                      },
+                      {
+                        icon: "category",
+                        label: "Category",
+                        value: course.category_title || "Programme",
+                      },
+                      {
+                        icon: "star",
+                        label: "Rating",
+                        value:
+                          course.rating != null
+                            ? `${Number(course.rating).toFixed(1)} / 5.0`
+                            : "—",
+                        filled: course.rating != null,
+                        iconClass:
+                          course.rating != null
+                            ? "text-amber-400"
+                            : "text-teal-500",
+                      },
+                      {
+                        icon: "view_module",
+                        label: "Modules",
+                        value: String(course.modules.length),
+                      },
+                    ] as {
+                      icon: string;
+                      label: string;
+                      value: string;
+                      filled?: boolean;
+                      iconClass?: string;
+                    }[]
+                  ).map((item) => (
                     <div
                       key={item.label}
                       className="flex items-center justify-between text-sm"
@@ -533,11 +572,12 @@ export default function CourseDetailPage() {
                         <MaterialIcon
                           name={item.icon}
                           size={16}
-                          className="text-teal-500"
+                          filled={item.filled ?? false}
+                          className={item.iconClass ?? "text-teal-500"}
                         />
                         {item.label}
                       </span>
-                      <span className="max-w-[55%] text-right font-semibold text-slate-900">
+                      <span className="font-semibold text-slate-800">
                         {item.value}
                       </span>
                     </div>

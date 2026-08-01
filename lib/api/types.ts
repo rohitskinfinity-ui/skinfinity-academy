@@ -43,6 +43,8 @@ export type PublicCourseCard = {
   rating: string | number | null;
   tag: string | null;
   is_bestseller: boolean;
+  starts_on?: string | null;
+  ends_on?: string | null;
   programme_meta?: Record<string, unknown> | null;
   eligible_qualifications?: string[] | null;
   marketing_content?: CourseMarketingContent | null;
@@ -123,6 +125,31 @@ export type PublicEvent = {
   status: string;
 };
 
+export type PublicCalendarCourse = {
+  id: string;
+  slug: string;
+  title: string;
+  status: "upcoming" | "ongoing";
+  starts_on?: string | null;
+  ends_on?: string | null;
+  starts_at: string;
+  ends_at: string | null;
+  duration_label: string | null;
+  image_url: string | null;
+  list_price: string | number | null;
+  currency: string;
+  level: string | null;
+  mode: string | null;
+  tag: string | null;
+  category_label: string | null;
+  location: string | null;
+  venue: string | null;
+  seats_total: number | null;
+  seats_left: number | null;
+  instructor_name: string | null;
+  next_event_title: string | null;
+};
+
 export type PublicBlogPost = {
   id: string;
   slug: string;
@@ -155,6 +182,25 @@ export type PublicTestimonial = {
   video_title: string | null;
   is_featured: boolean;
   review_date: string | null;
+};
+
+/** Homepage review cards from GET /api/public/reviews */
+export type PublicHomeReview = {
+  id: string;
+  person_name: string;
+  credentials: string | null;
+  location: string | null;
+  course_label: string | null;
+  rating: string | number | null;
+  quote: string;
+  image_url: string | null;
+  is_featured: boolean;
+  review_date: string | null;
+};
+
+export type PublicHomeReviewsResponse = {
+  items: PublicHomeReview[];
+  meta: { limit: number; total: number };
 };
 
 export type SubmitApplicationBody = {
