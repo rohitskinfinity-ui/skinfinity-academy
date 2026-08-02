@@ -1,6 +1,6 @@
 import type { ApiFailure, ApiSuccess } from "./types";
 
-const DEFAULT_API_URL = "http://localhost:3000";
+const DEFAULT_API_URL = "http://localhost:3001";
 
 export function getApiBaseUrl() {
   return (

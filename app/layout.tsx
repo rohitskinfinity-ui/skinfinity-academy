@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Manrope, Outfit } from "next/font/google";
+import Providers from "./providers";
 import "./globals.css";
 
 const manrope = Manrope({
@@ -64,7 +65,7 @@ export default function RootLayout({
         />
       </head>
       <body className="min-h-full flex flex-col bg-[#F8FAFC] font-sans text-slate-900">
-        {children}
+        <Providers>{children}</Providers>
       </body>
     </html>
   );

@@ -1,10 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
 import MaterialIcon from "@/components/shared/MaterialIcon";
+import { useStudentAuth } from "@/store/student-auth";
 
 const learnItems = [
   { id: "dashboard", href: "/dashboard", label: "Dashboard", icon: "dashboard" },
@@ -25,6 +26,13 @@ const accountItems = [
 function isActive(pathname: string, href: string) {
   if (href === "/dashboard") return pathname === "/dashboard";
   return pathname === href || pathname.startsWith(`${href}/`);
+}
+
+function initialsFromName(name: string) {
+  const parts = name.trim().split(/\s+/).filter(Boolean);
+  if (!parts.length) return "ST";
+  if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
+  return `${parts[0][0] ?? ""}${parts[1][0] ?? ""}`.toUpperCase();
 }
 
 function NavLink({
@@ -65,15 +73,37 @@ export default function LMSLayout({ children }: { children: React.ReactNode }) {
   const [search, setSearch] = useState("");
   const pathname = usePathname();
   const router = useRouter();
+  const { token, student, hydrated, loading, logout } = useStudentAuth();
 
   const isCoursePlayer = pathname.startsWith("/course");
+
+  useEffect(() => {
+    if (!hydrated) return;
+    if (!token || !student) {
+      router.replace("/login");
+    }
+  }, [hydrated, token, student, router]);
+
+  const displayName = student?.display_name || student?.full_name || "Student";
+  const initials = useMemo(() => initialsFromName(displayName), [displayName]);
+  const programLabel =
+    student?.enrollments?.[0]?.course_title || "Enrolled student";
+
+  if (!hydrated || loading || !token || !student) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-[#F5F7FA]">
+        <p className="text-sm text-slate-400">Loading your dashboard…</p>
+      </div>
+    );
+  }
 
   if (isCoursePlayer) {
     return <>{children}</>;
   }
 
-  const handleLogout = () => {
-    router.push("/login");
+  const handleLogout = async () => {
+    await logout();
+    router.replace("/login");
   };
 
   const closeSidebar = () => setSidebarOpen(false);
@@ -139,16 +169,16 @@ export default function LMSLayout({ children }: { children: React.ReactNode }) {
         <div className="border-t border-slate-100 p-3">
           <div className="flex items-center gap-2.5 rounded-xl bg-slate-50 p-2.5">
             <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-teal-600 to-teal-800 text-xs font-bold text-white">
-              DA
+              {initials}
             </div>
             <div className="min-w-0 flex-1">
               <p className="truncate text-xs font-semibold text-slate-900">
-                Dr. Arjun
+                {displayName}
               </p>
-              <p className="truncate text-[10px] text-slate-400">Fellowship</p>
+              <p className="truncate text-[10px] text-slate-400">{programLabel}</p>
             </div>
             <button
-              onClick={handleLogout}
+              onClick={() => void handleLogout()}
               className="rounded-lg p-1.5 text-slate-400 transition-colors hover:bg-red-50 hover:text-red-600"
               aria-label="Logout"
               title="Logout"
@@ -200,7 +230,7 @@ export default function LMSLayout({ children }: { children: React.ReactNode }) {
               >
                 <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-emerald-500" />
                 <span className="text-[11px] font-semibold text-emerald-700">
-                  Live at 3:00 PM
+                  Live classes
                 </span>
               </Link>
               <Link
@@ -220,10 +250,10 @@ export default function LMSLayout({ children }: { children: React.ReactNode }) {
                 className="flex items-center gap-2 rounded-xl border border-slate-200/80 bg-white p-1 pr-2.5 transition-all hover:border-teal-200"
               >
                 <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-teal-600 to-teal-800 text-[11px] font-bold text-white">
-                  DA
+                  {initials}
                 </div>
                 <span className="hidden text-xs font-semibold text-slate-800 sm:block">
-                  Dr. Arjun
+                  {displayName}
                 </span>
               </Link>
             </div>

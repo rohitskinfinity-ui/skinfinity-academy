@@ -1,11 +1,13 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { Suspense, useEffect, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
 import { motion, useReducedMotion } from "framer-motion";
 import MaterialIcon from "@/components/shared/MaterialIcon";
+import { getGoogleAuthStartUrl } from "@/lib/api/student-token";
+import { useStudentAuth } from "@/store/student-auth";
 
 const highlights = [
   { icon: "verified", label: "Accredited certificates" },
@@ -18,6 +20,14 @@ const stats = [
   { value: "45+", label: "Programs" },
   { value: "4.9", label: "Avg. rating" },
 ];
+
+const ERROR_MESSAGES: Record<string, string> = {
+  not_enrolled:
+    "This Google account is not enrolled. Please enroll first.",
+  invalid_state: "Sign-in session expired. Please try again.",
+  oauth_failed: "Google sign-in failed. Please try again.",
+  access_denied: "Google sign-in was cancelled.",
+};
 
 function GoogleIcon({ className }: { className?: string }) {
   return (
@@ -42,21 +52,31 @@ function GoogleIcon({ className }: { className?: string }) {
   );
 }
 
-export default function LoginPage() {
+function LoginForm() {
   const [loading, setLoading] = useState(false);
   const router = useRouter();
+  const params = useSearchParams();
   const reduceMotion = useReducedMotion();
+  const { token, hydrated, student } = useStudentAuth();
+
+  const errorKey = params.get("error") || "";
+  const errorMessage =
+    ERROR_MESSAGES[errorKey] ||
+    (errorKey ? "Unable to sign in. Please try again." : null);
+
+  useEffect(() => {
+    if (hydrated && token && student) {
+      router.replace("/dashboard");
+    }
+  }, [hydrated, token, student, router]);
 
   const handleGoogleLogin = () => {
     setLoading(true);
-    setTimeout(() => {
-      router.push("/dashboard");
-    }, 600);
+    window.location.href = getGoogleAuthStartUrl();
   };
 
   return (
     <div className="relative min-h-screen overflow-hidden bg-slate-950 lg:grid lg:grid-cols-2">
-      {/* ── Brand panel ── */}
       <aside className="relative hidden min-h-screen flex-col overflow-hidden lg:flex">
         <Image
           src="/login.png"
@@ -66,137 +86,88 @@ export default function LoginPage() {
           className="object-cover object-center"
           sizes="50vw"
         />
-        {/* Softer overlay — image stays visible, text stays readable */}
         <div className="absolute inset-0 bg-gradient-to-t from-teal-950/95 via-teal-900/55 to-teal-900/30" />
         <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(15,23,42,0.55),transparent_45%)]" />
 
         <div className="relative z-10 flex min-h-screen flex-col justify-between p-10 xl:p-12">
-          {/* Logo */}
-          <Link href="/" className="inline-flex w-fit items-center gap-3 rounded-2xl bg-white/10 px-4 py-2.5 ring-1 ring-white/15 backdrop-blur-md transition-colors hover:bg-white/15">
+          <Link
+            href="/"
+            className="inline-flex w-fit items-center gap-3 rounded-2xl bg-white/10 px-4 py-2.5 ring-1 ring-white/15 backdrop-blur-md transition-colors hover:bg-white/15"
+          >
             <Image
               src="/logo.svg"
               alt="Skinfinity Academy"
               width={40}
               height={40}
-              className="size-10 object-contain"
+              className="h-10 w-10 object-contain"
             />
             <div>
-              <p
-                className="text-base font-bold tracking-tight text-white"
-                style={{ fontFamily: "var(--font-heading), sans-serif" }}
-              >
-                Skinfinity Academy
-              </p>
-              <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-teal-200">
-                Student Portal
+              <p className="text-sm font-bold text-white">Skinfinity Academy</p>
+              <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-teal-100/80">
+                Student portal
               </p>
             </div>
           </Link>
 
-          {/* Main content card */}
-          <div className="my-8 w-full max-w-md">
-            <motion.div
-              initial={reduceMotion ? false : { opacity: 0, y: 16 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-              className="rounded-[28px] bg-white/10 p-7 ring-1 ring-white/15 backdrop-blur-md xl:p-8"
+          <div>
+            <p className="mb-3 text-xs font-bold uppercase tracking-[0.2em] text-teal-200/90">
+              Welcome back
+            </p>
+            <h1
+              className="max-w-md text-4xl font-bold leading-tight text-white xl:text-5xl"
+              style={{ fontFamily: "var(--font-heading), sans-serif" }}
             >
-              <p className="mb-2 inline-flex rounded-full bg-teal-500/20 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.14em] text-teal-100">
-                Welcome back
-              </p>
-              <h1
-                className="text-3xl font-bold leading-tight tracking-tight text-white xl:text-4xl"
-                style={{ fontFamily: "var(--font-heading), sans-serif" }}
-              >
-                Continue your{" "}
-                <span className="text-teal-300">clinical journey</span>
-              </h1>
-              <p className="mt-3 text-sm leading-relaxed text-white/80">
-                Access your courses, workshops, certificates, and personalized
-                dashboard — all in one place.
-              </p>
-
-              <ul className="mt-6 space-y-2.5">
-                {highlights.map((item, i) => (
-                  <motion.li
-                    key={item.label}
-                    initial={reduceMotion ? false : { opacity: 0, x: -10 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{
-                      delay: 0.12 + i * 0.07,
-                      duration: 0.35,
-                    }}
-                    className="flex items-center gap-3 rounded-xl bg-white/10 px-3 py-2.5 text-sm text-white/90 ring-1 ring-white/10"
-                  >
-                    <span className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-teal-600 text-white">
-                      <MaterialIcon name={item.icon} size={16} />
-                    </span>
-                    {item.label}
-                  </motion.li>
-                ))}
-              </ul>
-            </motion.div>
+              Continue your clinical training journey
+            </h1>
+            <p className="mt-4 max-w-sm text-sm leading-relaxed text-teal-50/80">
+              Access live classes, course materials, and certificates with the
+              Google account you used at enrollment.
+            </p>
+            <ul className="mt-8 space-y-3">
+              {highlights.map((item) => (
+                <li
+                  key={item.label}
+                  className="flex items-center gap-3 text-sm text-teal-50/90"
+                >
+                  <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-white/10 text-teal-100 ring-1 ring-white/15">
+                    <MaterialIcon name={item.icon} size={16} />
+                  </span>
+                  {item.label}
+                </li>
+              ))}
+            </ul>
           </div>
 
-          {/* Stats + footer */}
-          <div className="space-y-5">
-            <div className="flex max-w-md divide-x divide-white/15 rounded-2xl bg-white/10 ring-1 ring-white/10 backdrop-blur-md">
-              {stats.map((stat) => (
-                <div key={stat.label} className="flex-1 px-4 py-3.5 text-center">
-                  <p
-                    className="text-xl font-bold text-white"
-                    style={{ fontFamily: "var(--font-heading), sans-serif" }}
-                  >
-                    {stat.value}
-                  </p>
-                  <p className="mt-0.5 text-[10px] font-medium text-teal-100/70">
-                    {stat.label}
-                  </p>
-                </div>
-              ))}
-            </div>
-            <p className="text-xs text-white/45">
-              © {new Date().getFullYear()} Skinfinity Academy. All rights reserved.
-            </p>
+          <div className="grid grid-cols-3 gap-4 border-t border-white/10 pt-6">
+            {stats.map((stat) => (
+              <div key={stat.label}>
+                <p
+                  className="text-xl font-bold text-white"
+                  style={{ fontFamily: "var(--font-heading), sans-serif" }}
+                >
+                  {stat.value}
+                </p>
+                <p className="text-[11px] font-medium text-teal-100/70">
+                  {stat.label}
+                </p>
+              </div>
+            ))}
           </div>
         </div>
       </aside>
 
-      {/* ── Auth panel ── */}
-      <main className="relative flex min-h-screen flex-col bg-[#f8fafc]">
-        <div
-          aria-hidden
-          className="pointer-events-none absolute inset-0 overflow-hidden lg:hidden"
-        >
-          <div className="absolute -right-20 -top-20 h-64 w-64 rounded-full bg-teal-400/15 blur-3xl" />
+      <main className="relative flex min-h-screen flex-col bg-[#F8FAFC]">
+        <div className="flex items-center justify-between px-5 py-4 lg:hidden">
+          <Link href="/" className="inline-flex items-center gap-2">
+            <Image src="/logo.svg" alt="Skinfinity" width={32} height={32} />
+            <span className="text-sm font-bold text-slate-900">Skinfinity</span>
+          </Link>
+          <Link href="/enroll" className="text-xs font-bold text-teal-700">
+            Enroll
+          </Link>
         </div>
 
-        <header className="relative z-10 flex items-center justify-between px-6 py-5 sm:px-10 lg:px-12">
-          <Link href="/" className="inline-flex items-center gap-2.5 lg:hidden">
-            <Image
-              src="/logo.svg"
-              alt="Skinfinity Academy"
-              width={36}
-              height={36}
-              className="h-9 w-9 object-contain"
-            />
-            <span
-              className="text-sm font-bold text-slate-900"
-              style={{ fontFamily: "var(--font-heading), sans-serif" }}
-            >
-              Skinfinity Academy
-            </span>
-          </Link>
-          <Link
-            href="/"
-            className="ml-auto inline-flex items-center gap-1.5 text-sm font-semibold text-slate-500 transition-colors hover:text-teal-700"
-          >
-            <MaterialIcon name="arrow_back" size={16} />
-            Back to home
-          </Link>
-        </header>
-
-        <div className="relative z-10 flex flex-1 items-center justify-center px-6 py-10 sm:px-10 lg:px-12">
+        <div className="flex flex-1 items-center justify-center px-5 py-10 sm:px-8">
           <motion.div
             initial={reduceMotion ? false : { opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
@@ -219,6 +190,23 @@ export default function LoginPage() {
               </p>
             </div>
 
+            {errorMessage ? (
+              <div
+                role="alert"
+                className="mb-4 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700"
+              >
+                {errorMessage}
+                {errorKey === "not_enrolled" ? (
+                  <>
+                    {" "}
+                    <Link href="/enroll" className="font-bold underline">
+                      Enroll now
+                    </Link>
+                  </>
+                ) : null}
+              </div>
+            ) : null}
+
             <div className="rounded-[24px] border border-slate-200/80 bg-white p-6 shadow-[0_20px_50px_rgba(15,23,42,0.06)] sm:p-8">
               <button
                 type="button"
@@ -239,7 +227,9 @@ export default function LoginPage() {
                     <GoogleIcon />
                   </span>
                 )}
-                <span>{loading ? "Signing you in…" : "Continue with Google"}</span>
+                <span>
+                  {loading ? "Signing you in…" : "Continue with Google"}
+                </span>
               </button>
 
               <div className="my-6 flex items-center gap-3">
@@ -284,7 +274,6 @@ export default function LoginPage() {
               </Link>
             </p>
 
-            {/* Mobile trust strip */}
             <div className="mt-10 grid grid-cols-3 gap-3 border-t border-slate-200 pt-6 lg:hidden">
               {stats.map((stat) => (
                 <div key={stat.label} className="text-center">
@@ -304,5 +293,13 @@ export default function LoginPage() {
         </div>
       </main>
     </div>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-[#F8FAFC]" />}>
+      <LoginForm />
+    </Suspense>
   );
 }
