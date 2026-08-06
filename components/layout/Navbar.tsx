@@ -11,7 +11,7 @@ import {
   SheetTrigger,
   SheetTitle,
 } from "@/components/ui/sheet";
-import { fetchCategories, fetchCourses } from "@/lib/api/public";
+import { fetchCategories, fetchCourses, fetchWorkshops } from "@/lib/api/public";
 
 interface CourseItem {
   name: string;
@@ -24,6 +24,29 @@ interface CourseCategory {
   title: string;
   icon: string;
   courses: CourseItem[];
+}
+
+interface NavbarWorkshopItem {
+  id: string;
+  title: string;
+  desc: string;
+  icon: string;
+  href: string;
+  badge?: string;
+}
+
+function stripHtml(value: string) {
+  return value
+    .replace(/<br\s*\/?>/gi, " ")
+    .replace(/<\/p>/gi, " ")
+    .replace(/<[^>]+>/g, "")
+    .replace(/&nbsp;/g, " ")
+    .replace(/&amp;/g, "&")
+    .replace(/&lt;/g, "<")
+    .replace(/&gt;/g, ">")
+    .replace(/&quot;/g, '"')
+    .replace(/\s+/g, " ")
+    .trim();
 }
 
 const FALLBACK_CATEGORIES: CourseCategory[] = [
@@ -53,8 +76,9 @@ const FALLBACK_CATEGORIES: CourseCategory[] = [
   },
 ];
 
-const workshopsList = [
+const FALLBACK_WORKSHOPS: NavbarWorkshopItem[] = [
   {
+    id: "1",
     title: "Botox & Dermal Fillers Hands-On",
     desc: "1:1 doctor supervised live patient procedure training.",
     icon: "vaccines",
@@ -62,18 +86,21 @@ const workshopsList = [
     badge: "Limited Seats",
   },
   {
+    id: "2",
     title: "PRP & GFC Hair Restoration",
     desc: "Centrifugation protocols, scalp mapping & injection technique.",
     icon: "water_drop",
     href: "/workshops",
   },
   {
+    id: "3",
     title: "Laser Hair Removal & CO2 Laser",
     desc: "Spot size selection, fluence optimization & cooling safety.",
     icon: "light_mode",
     href: "/workshops",
   },
   {
+    id: "4",
     title: "COG Thread Lift Masterclass",
     desc: "Mid-face lifting, vector design & complication management.",
     icon: "architecture",
@@ -81,12 +108,14 @@ const workshopsList = [
     badge: "Advanced",
   },
   {
+    id: "5",
     title: "Weight Loss & Body Contouring",
     desc: "Cryolipolysis, RF lipolysis & non-invasive body sculpting protocols.",
     icon: "fitness_center",
     href: "/workshops",
   },
   {
+    id: "6",
     title: "Rhinoplasty Courses (Non-Surgical)",
     desc: "Liquid rhinoplasty, nose thread lifts & facial anatomical safety.",
     icon: "face",
@@ -103,6 +132,8 @@ export default function Navbar() {
   const [testimonialsMobileOpen, setTestimonialsMobileOpen] = useState(false);
   const [courseCategories, setCourseCategories] =
     useState<CourseCategory[]>(FALLBACK_CATEGORIES);
+  const [workshopsList, setWorkshopsList] =
+    useState<NavbarWorkshopItem[]>(FALLBACK_WORKSHOPS);
   const [activeCategory, setActiveCategory] = useState<string>(
     FALLBACK_CATEGORIES[0]?.id ?? "pg-diploma",
   );
@@ -112,27 +143,67 @@ export default function Navbar() {
     let cancelled = false;
     (async () => {
       try {
-        const [cats, courses] = await Promise.all([
+        const [cats, courses, workshopRes] = await Promise.all([
           fetchCategories(),
           fetchCourses({ limit: 100 }),
+          fetchWorkshops({ limit: 10 }),
         ]);
         if (cancelled) return;
-        const mapped: CourseCategory[] = cats.map((cat) => ({
-          id: cat.slug,
-          title: cat.title,
-          icon: cat.icon || "school",
-          courses: courses.items
-            .filter((c) => c.category_slug === cat.slug)
-            .map((c) => ({
-              name: c.title,
-              slug: c.slug,
-              badge: c.is_bestseller ? "Popular" : c.tag || undefined,
-            })),
-        })).filter((cat) => cat.courses.length > 0);
+
+        const mapped: CourseCategory[] = cats
+          .map((cat) => ({
+            id: cat.slug,
+            title: cat.title,
+            icon: cat.icon || "school",
+            courses: courses.items
+              .filter((c) => c.category_slug === cat.slug)
+              .map((c) => ({
+                name: c.title,
+                slug: c.slug,
+                badge: c.is_bestseller ? "Popular" : c.tag || undefined,
+              })),
+          }))
+          .filter((cat) => cat.courses.length > 0);
 
         if (mapped.length > 0) {
           setCourseCategories(mapped);
           setActiveCategory(mapped[0].id);
+        }
+
+        if (workshopRes.items.length > 0) {
+          const iconList = [
+            "vaccines",
+            "water_drop",
+            "light_mode",
+            "architecture",
+            "fitness_center",
+            "face",
+          ];
+          const mappedWorkshops: NavbarWorkshopItem[] = workshopRes.items.map(
+            (w, idx) => {
+              const icon = iconList[idx % iconList.length];
+              const desc = w.tagline
+                ? w.tagline
+                : w.description
+                  ? stripHtml(w.description)
+                  : `${w.duration_label || "Hands-On"} workshop in ${w.locations || "Noida"}.`;
+              const badge = w.duration_label
+                ? w.duration_label
+                : w.seats_left != null && w.seats_left <= 5
+                  ? "Limited Seats"
+                  : undefined;
+
+              return {
+                id: w.id,
+                title: w.title,
+                desc,
+                icon,
+                href: `/workshops/${w.slug}`,
+                badge,
+              };
+            },
+          );
+          setWorkshopsList(mappedWorkshops);
         }
       } catch {
         /* keep fallback */
@@ -344,7 +415,7 @@ export default function Navbar() {
                 <div className="grid grid-cols-2 gap-3">
                   {workshopsList.map((w) => (
                     <Link
-                      key={w.title}
+                      key={w.id || w.title}
                       href={w.href}
                       className="p-3 rounded-2xl hover:bg-teal-50/80 border border-transparent hover:border-teal-100 transition-all duration-200 flex items-start gap-3 group/wItem"
                     >
