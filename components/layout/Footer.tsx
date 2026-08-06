@@ -78,7 +78,9 @@ const footerLinks = {
 };
 
 const contactInfo = [
-  { icon: Mail, text: "support@skinfinityacademy.com", href: "mailto:support@skinfinityacademy.com" },
+  { icon: Mail, text: "info@skinfinityacademy.com", href: "mailto:info@skinfinityacademy.com" },
+  { icon: Mail, text: "admissions@skinfinityacademy.com", href: "mailto:admissions@skinfinityacademy.com" },
+  { icon: Mail, text: "management@skinfinityacademy.com", href: "mailto:management@skinfinityacademy.com" },
   { icon: Phone, text: "+91 98765 43210", href: "tel:+919876543210" },
   { icon: MapPin, text: "Plot No. B-1, B Block, Sector 36, Noida, Uttar Pradesh 201303", href: "#" },
 ];

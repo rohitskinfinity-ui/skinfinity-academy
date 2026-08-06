@@ -54,7 +54,7 @@ export default function ContactPage() {
         subtitle="Whether it's a course inquiry, campus visit booking, or admissions question — our team is ready to help."
         breadcrumb="Contact Us"
       >
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-8 pt-8 border-t border-slate-200">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mt-8 pt-8 border-t border-slate-200">
           <div className="flex items-center gap-3.5 p-4 rounded-2xl bg-slate-50 border border-slate-200/80 shadow-xs">
             <div className="w-10 h-10 rounded-xl bg-teal-50 text-teal-600 flex items-center justify-center flex-shrink-0">
               <MaterialIcon name="call" size={20} />
@@ -63,7 +63,7 @@ export default function ContactPage() {
               <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400">
                 CALL US
               </p>
-              <p className="text-sm font-bold text-slate-900">+91 98765 43210</p>
+              <p className="text-xs font-bold text-slate-900">+91 98765 43210</p>
             </div>
           </div>
 
@@ -71,13 +71,50 @@ export default function ContactPage() {
             <div className="w-10 h-10 rounded-xl bg-teal-50 text-teal-600 flex items-center justify-center flex-shrink-0">
               <MaterialIcon name="mail" size={20} />
             </div>
-            <div>
+            <div className="min-w-0">
               <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400">
-                EMAIL US
+                GENERAL ENQUIRIES
               </p>
-              <p className="text-sm font-bold text-slate-900">
-                support@skinfinity.edu
+              <a
+                href="mailto:info@skinfinityacademy.com"
+                className="text-xs font-bold text-slate-900 hover:text-teal-600 truncate block"
+              >
+                info@skinfinityacademy.com
+              </a>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-3.5 p-4 rounded-2xl bg-slate-50 border border-slate-200/80 shadow-xs">
+            <div className="w-10 h-10 rounded-xl bg-teal-50 text-teal-600 flex items-center justify-center flex-shrink-0">
+              <MaterialIcon name="school" size={20} />
+            </div>
+            <div className="min-w-0">
+              <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400">
+                ADMISSIONS DESK
               </p>
+              <a
+                href="mailto:admissions@skinfinityacademy.com"
+                className="text-xs font-bold text-slate-900 hover:text-teal-600 truncate block"
+              >
+                admissions@skinfinityacademy.com
+              </a>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-3.5 p-4 rounded-2xl bg-slate-50 border border-slate-200/80 shadow-xs">
+            <div className="w-10 h-10 rounded-xl bg-teal-50 text-teal-600 flex items-center justify-center flex-shrink-0">
+              <MaterialIcon name="business" size={20} />
+            </div>
+            <div className="min-w-0">
+              <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400">
+                MANAGEMENT
+              </p>
+              <a
+                href="mailto:management@skinfinityacademy.com"
+                className="text-xs font-bold text-slate-900 hover:text-teal-600 truncate block"
+              >
+                management@skinfinityacademy.com
+              </a>
             </div>
           </div>
         </div>

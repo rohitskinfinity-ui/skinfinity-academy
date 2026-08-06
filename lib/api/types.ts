@@ -215,12 +215,45 @@ export type PublicHomeReviewsResponse = {
   meta: { limit: number; total: number };
 };
 
+export type PublicWorkshopProcedure = {
+  name: string;
+  image_url?: string | null;
+  sort_order?: number;
+};
+
+export type PublicWorkshop = {
+  id: string;
+  slug: string;
+  title: string;
+  tagline: string | null;
+  description: string | null;
+  eligibility_html: string | null;
+  image_url: string | null;
+  starts_on: string;
+  ends_on: string | null;
+  duration_label: string | null;
+  locations: string | null;
+  delivery_modes: string[];
+  features: string[];
+  procedures: PublicWorkshopProcedure[];
+  seats_total: number | null;
+  seats_left: number | null;
+  price: string | number | null;
+  currency: string;
+  contact_phone: string | null;
+  sort_order: number;
+  published_at: string | null;
+};
+
 export type SubmitApplicationBody = {
+  application_kind?: "course" | "workshop";
   full_name: string;
   guardian_name?: string | null;
   course_preference?: string | null;
   course_slug?: string | null;
   course_id?: string | null;
+  workshop_id?: string | null;
+  workshop_slug?: string | null;
   date_of_birth?: string | null;
   gender?: string | null;
   highest_qualification?: string | null;
@@ -238,6 +271,13 @@ export type SubmitApplicationBody = {
   quoted_price?: number | null;
   currency?: string;
   accepted_terms: boolean;
+  photo_name?: string | null;
+  photo_base64?: string | null;
+  photo_url?: string | null;
+  doc_name?: string | null;
+  doc_base64?: string | null;
+  doc_url?: string | null;
+  notes?: string | null;
 };
 
 export type SubmitContactBody = {

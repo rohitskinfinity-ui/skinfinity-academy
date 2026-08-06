@@ -8,10 +8,11 @@ import MaterialIcon from "@/components/shared/MaterialIcon";
 import DatePicker from "@/components/ui/date-picker";
 import {
   fetchCourses,
+  fetchWorkshopBySlug,
   formatPrice,
   submitApplication,
 } from "@/lib/api/public";
-import type { PublicCourseCard } from "@/lib/api/types";
+import type { PublicCourseCard, PublicWorkshop } from "@/lib/api/types";
 
 const fieldClass =
   "w-full px-4 py-3 bg-white border border-slate-300 rounded-xl text-sm shadow-sm focus:outline-none focus:border-teal-500 focus:ring-1 focus:ring-teal-500";
@@ -62,74 +63,85 @@ function SectionTitle({ n, title }: { n: number; title: string }) {
     </div>
   );
 }
+function parsePriceNumber(val: string | number | null | undefined): number {
+  if (val == null) return 0;
+  if (typeof val === "number") return val;
+  const num = parseFloat(val.toString().replace(/[^0-9.]/g, ""));
+  return isNaN(num) ? 0 : num;
+}
 
-function StepIndicator({ step }: { step: 1 | 2 }) {
-  return (
-    <div className="mb-6 flex items-center gap-3">
-      <div className="flex items-center gap-2">
-        <span
-          className={`flex h-8 w-8 items-center justify-center rounded-full text-xs font-bold ${
-            step >= 1 ? "bg-teal-600 text-white" : "bg-slate-100 text-slate-400"
-          }`}
-        >
-          1
-        </span>
-        <span
-          className={`text-sm font-bold ${
-            step === 1 ? "text-slate-900" : "text-slate-500"
-          }`}
-        >
-          Registration
-        </span>
-      </div>
-      <div className="h-px flex-1 bg-slate-200" />
-      <div className="flex items-center gap-2">
-        <span
-          className={`flex h-8 w-8 items-center justify-center rounded-full text-xs font-bold ${
-            step >= 2 ? "bg-teal-600 text-white" : "bg-slate-100 text-slate-400"
-          }`}
-        >
-          2
-        </span>
-        <span
-          className={`text-sm font-bold ${
-            step === 2 ? "text-slate-900" : "text-slate-500"
-          }`}
-        >
-          Checkout
-        </span>
-      </div>
-    </div>
-  );
+function fileToBase64(file: File): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onload = () => resolve(reader.result as string);
+    reader.onerror = (err) => reject(err);
+  });
 }
 
 function EnrollFormContent() {
   const searchParams = useSearchParams();
   const initialProgram =
     searchParams.get("program") || searchParams.get("title") || "";
+  const workshopSlug = searchParams.get("workshop")?.trim() || "";
+  const isWorkshop = Boolean(workshopSlug);
 
   const [courses, setCourses] = useState<PublicCourseCard[]>([]);
-  const [coursesLoading, setCoursesLoading] = useState(true);
-  const [step, setStep] = useState<1 | 2>(1);
+  const [coursesLoading, setCoursesLoading] = useState(!isWorkshop);
+  const [workshop, setWorkshop] = useState<PublicWorkshop | null>(null);
+  const [workshopLoading, setWorkshopLoading] = useState(isWorkshop);
+  const [workshopError, setWorkshopError] = useState<string | null>(null);
   const [submitted, setSubmitted] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [registrationId, setRegistrationId] = useState<string | null>(null);
   const [acceptedTerms, setAcceptedTerms] = useState(false);
   const [photoName, setPhotoName] = useState("");
+  const [photoBase64, setPhotoBase64] = useState("");
   const [docName, setDocName] = useState("");
+  const [docBase64, setDocBase64] = useState("");
+
+  const handlePhotoSelect = async (file: File | undefined) => {
+    if (!file) {
+      setPhotoName("");
+      setPhotoBase64("");
+      return;
+    }
+    setPhotoName(file.name);
+    try {
+      const b64 = await fileToBase64(file);
+      setPhotoBase64(b64);
+    } catch {
+      setPhotoBase64("");
+    }
+  };
+
+  const handleDocSelect = async (file: File | undefined) => {
+    if (!file) {
+      setDocName("");
+      setDocBase64("");
+      return;
+    }
+    setDocName(file.name);
+    try {
+      const b64 = await fileToBase64(file);
+      setDocBase64(b64);
+    } catch {
+      setDocBase64("");
+    }
+  };
 
   const [formData, setFormData] = useState({
     fullName: "",
     guardianName: "",
-    courseSlug: initialProgram,
+    courseSlug: "",
     dateOfBirth: "",
-    gender: "",
-    highestQualification: "",
+    gender: "male",
+    highestQualification: "MBBS",
     profession: "",
-    medicalBackground: "",
+    medicalBackground: "yes",
     registrationNo: "",
-    currentlyWorking: "",
+    currentlyWorking: "yes",
     whatsapp: "",
     alternateNo: "",
     email: "",
@@ -139,26 +151,18 @@ function EnrollFormContent() {
     source: "",
   });
 
+  const update = (field: keyof typeof formData, value: string) => {
+    setFormData((prev) => ({ ...prev, [field]: value }));
+  };
+
   useEffect(() => {
+    if (isWorkshop) return;
     let cancelled = false;
     (async () => {
       try {
         setCoursesLoading(true);
-        const list = await fetchCourses({ limit: 100 });
-        if (cancelled) return;
-        setCourses(list.items);
-        setFormData((prev) => {
-          if (prev.courseSlug) {
-            const match = list.items.find(
-              (c) =>
-                c.slug === prev.courseSlug ||
-                c.title.toLowerCase() === prev.courseSlug.toLowerCase(),
-            );
-            if (match) return { ...prev, courseSlug: match.slug };
-          }
-          if (list.items[0]) return { ...prev, courseSlug: list.items[0].slug };
-          return prev;
-        });
+        const list = await fetchCourses();
+        if (!cancelled) setCourses(list.items);
       } catch {
         if (!cancelled) setCourses([]);
       } finally {
@@ -168,288 +172,224 @@ function EnrollFormContent() {
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [isWorkshop]);
 
   useEffect(() => {
-    if (initialProgram) {
-      setFormData((prev) => ({ ...prev, courseSlug: initialProgram }));
+    if (!isWorkshop) return;
+    let cancelled = false;
+    (async () => {
+      try {
+        setWorkshopLoading(true);
+        setWorkshopError(null);
+        const data = await fetchWorkshopBySlug(workshopSlug);
+        if (!cancelled) setWorkshop(data);
+      } catch (err) {
+        if (cancelled) return;
+        setWorkshopError(
+          err instanceof Error
+            ? err.message
+            : "Failed to load workshop details",
+        );
+        setWorkshop(null);
+      } finally {
+        if (!cancelled) setWorkshopLoading(false);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [isWorkshop, workshopSlug]);
+
+  useEffect(() => {
+    if (isWorkshop || courses.length === 0) return;
+    const matched = courses.find((c) => {
+      if (initialProgram) {
+        const q = initialProgram.toLowerCase();
+        if (c.slug.toLowerCase() === q || c.title.toLowerCase() === q) {
+          return true;
+        }
+      }
+      return false;
+    });
+    if (matched) {
+      setFormData((prev) => ({ ...prev, courseSlug: matched.slug }));
+    } else if (courses[0]) {
+      setFormData((prev) => ({ ...prev, courseSlug: courses[0].slug }));
     }
-  }, [initialProgram]);
+  }, [courses, initialProgram, isWorkshop]);
 
-  const update = (key: keyof typeof formData, value: string) =>
-    setFormData((prev) => ({ ...prev, [key]: value }));
+  const selectedCourse = courses.find((c) => c.slug === formData.courseSlug);
 
-  const selectedCourse =
-    courses.find((c) => c.slug === formData.courseSlug) ?? null;
-  const payableAmount =
-    selectedCourse?.list_price != null
-      ? Number(selectedCourse.list_price)
-      : 0;
-  const courseTitle = selectedCourse?.title || formData.courseSlug || "Programme";
+  const payableAmount = isWorkshop
+    ? parsePriceNumber(workshop?.price)
+    : parsePriceNumber(selectedCourse?.list_price);
+
+  const programTitle = isWorkshop
+    ? workshop?.title || "Hands-On Workshop"
+    : selectedCourse?.title || "Clinical Cosmetology Programme";
+
+  const programCurrency = isWorkshop
+    ? workshop?.currency || "INR"
+    : selectedCourse?.currency || "INR";
 
   if (submitted) {
     return (
-      <div className="rounded-3xl border border-teal-200 bg-teal-50 p-8 py-12 text-center">
-        <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-teal-600 text-white shadow-lg">
-          <MaterialIcon name="check" size={32} />
+      <div className="rounded-3xl border border-teal-200 bg-teal-50/50 p-8 text-center sm:p-12">
+        <div className="mx-auto mb-4 flex size-16 items-center justify-center rounded-full bg-teal-600 text-white shadow-lg">
+          <MaterialIcon name="check_circle" size={36} />
         </div>
         <h3
-          className="mb-2 text-2xl font-bold text-slate-900"
+          className="text-2xl font-extrabold text-slate-900 sm:text-3xl"
           style={{ fontFamily: "var(--font-heading), sans-serif" }}
         >
-          Enrollment Confirmed
+          Registration Submitted!
         </h3>
-        <p className="mx-auto mb-4 max-w-md text-sm text-slate-600">
-          Thank you,{" "}
-          <strong className="text-slate-900">
-            {formData.fullName || "Doctor"}
-          </strong>
-          ! Your reference code is{" "}
-          <span className="font-mono font-bold text-teal-700">
-            #{registrationId || "PENDING"}
-          </span>{" "}
-          for <strong>{courseTitle}</strong>. You are now enrolled.
+        <p className="mx-auto mt-2 max-w-md text-sm leading-relaxed text-slate-600">
+          Thank you for enrolling in{" "}
+          <strong className="text-slate-900">{programTitle}</strong>. Your
+          application has been received by our admissions team.
         </p>
-        {payableAmount > 0 ? (
-          <p className="mb-2 text-sm font-semibold text-teal-700">
-            Quoted fee: {formatINR(payableAmount)}
-          </p>
-        ) : (
-          <p className="mb-2 text-sm font-semibold text-teal-700">
-            Our team will share fee details shortly.
-          </p>
-        )}
-        <div className="mx-auto mb-4 flex max-w-md items-start gap-3 rounded-2xl border border-teal-200 bg-white/70 p-4 text-left">
-          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-teal-100 text-teal-700">
-            <MaterialIcon name="mail" size={18} />
-          </div>
-          <div>
-            <p className="text-sm font-bold text-slate-900">
-              What happens next?
-            </p>
-            <p className="mt-1 text-xs leading-relaxed text-slate-600">
-              Your student account is ready. We will contact you at{" "}
-              <strong className="text-slate-900">{formData.email}</strong>{" "}
-              with login details and batch schedule.
-            </p>
-          </div>
-        </div>
-        <div className="flex flex-col items-center justify-center gap-3 sm:flex-row">
-          <Link
-            href="/courses"
-            className="inline-flex items-center justify-center gap-2 rounded-xl bg-teal-600 px-8 py-3.5 text-sm font-bold text-white shadow-md transition-all hover:bg-teal-700"
-          >
-            BACK TO COURSES
-          </Link>
-          <Link
-            href="/contact"
-            className="inline-flex items-center justify-center gap-2 rounded-xl border border-slate-300 bg-white px-8 py-3.5 text-sm font-bold text-slate-700 transition-all hover:border-teal-300 hover:text-teal-700"
-          >
-            CONTACT ADMISSIONS
-          </Link>
-        </div>
-      </div>
-    );
-  }
 
-  if (step === 2) {
-    const formatDob = (iso: string) => {
-      if (!iso) return "—";
-      const [y, m, d] = iso.split("-");
-      return `${d}/${m}/${y}`;
-    };
-
-    const detailSections = [
-      {
-        title: "Personal Details",
-        rows: [
-          ["Full Name", formData.fullName],
-          ["Father's / Husband's Name", formData.guardianName],
-          ["Course", courseTitle],
-          ["Date of Birth", formatDob(formData.dateOfBirth)],
-          ["Gender", formData.gender],
-          ["Photo", photoName || "—"],
-        ],
-      },
-      {
-        title: "Education & Profession",
-        rows: [
-          ["Highest Qualification", formData.highestQualification],
-          ["Profession", formData.profession],
-          ["Qualification Document", docName || "—"],
-        ],
-      },
-      {
-        title: "Medical / Declaration",
-        rows: [
-          ["Medical Background", formData.medicalBackground],
-          ["Registration No", formData.registrationNo || "—"],
-          ["Currently Working", formData.currentlyWorking],
-        ],
-      },
-      {
-        title: "Contact Details",
-        rows: [
-          ["WhatsApp No", formData.whatsapp],
-          ["Alternate No", formData.alternateNo || "—"],
-          ["Email ID", formData.email],
-          ["Address", formData.address],
-          ["City / State", formData.cityState],
-          ["PIN Code", formData.pinCode],
-        ],
-      },
-      {
-        title: "Other",
-        rows: [["How Did You Find Us?", formData.source]],
-      },
-    ];
-
-    return (
-      <div className="space-y-5 pt-2">
-        <StepIndicator step={2} />
-
-        <div className="space-y-4 rounded-2xl border border-slate-200 bg-slate-50/80 p-5">
-          <div className="flex items-center justify-between">
-            <h4 className="text-sm font-bold text-slate-900">
-              Full Application Details
-            </h4>
-            <button
-              type="button"
-              onClick={() => setStep(1)}
-              className="text-xs font-bold text-teal-600 hover:text-teal-700"
-            >
-              Edit
-            </button>
-          </div>
-
-          <div className="space-y-4">
-            {detailSections.map((section) => (
-              <div
-                key={section.title}
-                className="rounded-xl border border-slate-200 bg-white p-4"
-              >
-                <p className="mb-3 text-[10px] font-bold uppercase tracking-[0.16em] text-teal-600">
-                  {section.title}
-                </p>
-                <div className="grid gap-3 text-sm sm:grid-cols-2">
-                  {section.rows.map(([label, value]) => (
-                    <div
-                      key={label}
-                      className={
-                        label === "Address" || label === "Course"
-                          ? "sm:col-span-2"
-                          : ""
-                      }
-                    >
-                      <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
-                        {label}
-                      </p>
-                      <p className="mt-0.5 break-words font-semibold text-slate-800">
-                        {value || "—"}
-                      </p>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        <div className="space-y-2.5 rounded-2xl border border-teal-200 bg-teal-50/50 p-5">
-          <h4 className="text-sm font-bold text-slate-900">Payment Breakdown</h4>
-          <div className="flex justify-between text-sm">
-            <span className="text-slate-600">Program fee (full payment)</span>
-            <span className="font-semibold text-slate-800">
-              {formatINR(payableAmount)}
+        {registrationId ? (
+          <div className="mx-auto mt-6 inline-block rounded-2xl border border-teal-200 bg-white px-6 py-3 shadow-xs">
+            <span className="block text-[10px] font-bold uppercase tracking-widest text-slate-400">
+              REGISTRATION ID
+            </span>
+            <span className="text-lg font-extrabold tracking-wider text-teal-700">
+              {registrationId}
             </span>
           </div>
-          <div className="flex items-center justify-between border-t border-teal-200 pt-3">
-            <span className="text-sm font-bold text-slate-900">Payable now</span>
-            <span className="text-2xl font-extrabold text-teal-700">
-              {formatINR(payableAmount)}
-            </span>
-          </div>
-        </div>
-
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-          <button
-            type="button"
-            onClick={() => setStep(1)}
-            className="flex items-center justify-center gap-2 rounded-xl border border-slate-300 bg-white px-6 py-3.5 text-sm font-bold text-slate-700 transition-all hover:border-teal-300 hover:text-teal-700"
-          >
-            <MaterialIcon name="arrow_back" size={16} />
-            BACK
-          </button>
-          <button
-            type="button"
-            disabled={submitting}
-            onClick={async () => {
-              try {
-                setSubmitting(true);
-                setSubmitError(null);
-                const result = await submitApplication({
-                  full_name: formData.fullName,
-                  guardian_name: formData.guardianName || null,
-                  course_slug: formData.courseSlug || null,
-                  course_preference: courseTitle,
-                  date_of_birth: formData.dateOfBirth || null,
-                  gender: mapGender(formData.gender),
-                  highest_qualification:
-                    formData.highestQualification || null,
-                  profession: formData.profession || null,
-                  medical_background: mapYesNo(formData.medicalBackground),
-                  registration_no: formData.registrationNo || null,
-                  currently_working: mapYesNo(formData.currentlyWorking),
-                  whatsapp: formData.whatsapp,
-                  alternate_no: formData.alternateNo || null,
-                  email: formData.email,
-                  address: formData.address || null,
-                  city_state: formData.cityState || null,
-                  pin_code: formData.pinCode || null,
-                  source: formData.source || null,
-                  quoted_price: payableAmount > 0 ? payableAmount : null,
-                  currency: selectedCourse?.currency || "INR",
-                  accepted_terms: acceptedTerms,
-                });
-                setRegistrationId(result.registration_id);
-                setSubmitted(true);
-              } catch (err) {
-                setSubmitError(
-                  err instanceof Error
-                    ? err.message
-                    : "Failed to complete enrollment",
-                );
-              } finally {
-                setSubmitting(false);
-              }
-            }}
-            className="flex flex-1 items-center justify-center gap-2 rounded-xl bg-teal-600 px-8 py-3.5 text-sm font-bold text-white shadow-md transition-all hover:bg-teal-700 disabled:opacity-60"
-          >
-            {submitting
-              ? "ENROLLING…"
-              : payableAmount > 0
-                ? `ENROLL · ${formatINR(payableAmount)}`
-                : "COMPLETE ENROLLMENT"}
-            <MaterialIcon name="send" size={16} />
-          </button>
-        </div>
-        {submitError ? (
-          <p className="mt-3 text-center text-sm text-red-600">{submitError}</p>
         ) : null}
+
+        <div className="mt-8 rounded-2xl border border-teal-100 bg-white p-5 text-left text-xs text-slate-600 space-y-2">
+          <p className="font-bold text-slate-900">What happens next?</p>
+          <p>
+            1. Our counselors will verify your document and qualification
+            details.
+          </p>
+          <p>
+            2. You will receive a formal confirmation email at{" "}
+            <strong className="text-slate-900">{formData.email}</strong> with your
+            seat allocation details.
+          </p>
+        </div>
+
+        <div className="mt-8 flex justify-center gap-3">
+          <Link href="/" className="btn-primary">
+            Return to Home
+          </Link>
+          <Link href="/contact" className="btn-secondary">
+            Contact Admissions
+          </Link>
+        </div>
       </div>
     );
   }
 
-  const onSubmit = (e: FormEvent) => {
+  const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     if (!acceptedTerms) return;
-    setStep(2);
+    if (!photoBase64) {
+      setSubmitError("Please upload a photo.");
+      return;
+    }
+    if (!docBase64) {
+      setSubmitError("Please upload your qualification document.");
+      return;
+    }
+
+    try {
+      setSubmitting(true);
+      setSubmitError(null);
+      const result = await submitApplication(
+        isWorkshop
+          ? {
+              application_kind: "workshop",
+              full_name: formData.fullName,
+              guardian_name: formData.guardianName || null,
+              workshop_slug: workshopSlug,
+              workshop_id: workshop?.id || null,
+              date_of_birth: formData.dateOfBirth || null,
+              gender: mapGender(formData.gender),
+              highest_qualification: formData.highestQualification || null,
+              profession: formData.profession || null,
+              medical_background: mapYesNo(formData.medicalBackground),
+              registration_no: formData.registrationNo || null,
+              currently_working: mapYesNo(formData.currentlyWorking),
+              whatsapp: formData.whatsapp,
+              alternate_no: formData.alternateNo || null,
+              email: formData.email,
+              address: formData.address || null,
+              city_state: formData.cityState || null,
+              pin_code: formData.pinCode || null,
+              source: formData.source || null,
+              quoted_price: payableAmount > 0 ? payableAmount : null,
+              currency: programCurrency,
+              accepted_terms: acceptedTerms,
+              photo_name: photoName || null,
+              photo_base64: photoBase64 || null,
+              doc_name: docName || null,
+              doc_base64: docBase64 || null,
+              notes:
+                [
+                  photoName ? `Photo: ${photoName}` : null,
+                  docName ? `Qualification Document: ${docName}` : null,
+                ]
+                  .filter(Boolean)
+                  .join(" | ") || null,
+            }
+          : {
+              full_name: formData.fullName,
+              guardian_name: formData.guardianName || null,
+              course_slug: formData.courseSlug || null,
+              course_preference: programTitle,
+              date_of_birth: formData.dateOfBirth || null,
+              gender: mapGender(formData.gender),
+              highest_qualification: formData.highestQualification || null,
+              profession: formData.profession || null,
+              medical_background: mapYesNo(formData.medicalBackground),
+              registration_no: formData.registrationNo || null,
+              currently_working: mapYesNo(formData.currentlyWorking),
+              whatsapp: formData.whatsapp,
+              alternate_no: formData.alternateNo || null,
+              email: formData.email,
+              address: formData.address || null,
+              city_state: formData.cityState || null,
+              pin_code: formData.pinCode || null,
+              source: formData.source || null,
+              quoted_price: payableAmount > 0 ? payableAmount : null,
+              currency: programCurrency,
+              accepted_terms: acceptedTerms,
+              photo_name: photoName || null,
+              photo_base64: photoBase64 || null,
+              doc_name: docName || null,
+              doc_base64: docBase64 || null,
+              notes:
+                [
+                  photoName ? `Photo: ${photoName}` : null,
+                  docName ? `Qualification Document: ${docName}` : null,
+                ]
+                  .filter(Boolean)
+                  .join(" | ") || null,
+            },
+      );
+      setRegistrationId(result.registration_id);
+      setSubmitted(true);
+    } catch (err) {
+      setSubmitError(
+        err instanceof Error
+          ? err.message
+          : isWorkshop
+            ? "Failed to submit workshop application"
+            : "Failed to complete enrollment",
+      );
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return (
-    <form onSubmit={onSubmit} className="space-y-6 pt-2">
-      <StepIndicator step={1} />
-
+    <form onSubmit={handleSubmit} className="space-y-6 pt-2">
       {/* 1. Personal Details */}
       <div className="space-y-4">
         <SectionTitle n={1} title="Personal Details" />
@@ -477,29 +417,40 @@ function EnrollFormContent() {
             />
           </div>
           <div>
-            <label className={labelClass}>Select Course *</label>
-            <select
-              required
-              value={formData.courseSlug}
-              onChange={(e) => update("courseSlug", e.target.value)}
-              className={`${fieldClass} text-slate-700`}
-              disabled={coursesLoading || courses.length === 0}
-            >
-              {coursesLoading ? (
-                <option value="">Loading courses…</option>
-              ) : courses.length === 0 ? (
-                <option value="">No courses available</option>
-              ) : (
-                courses.map((c) => (
-                  <option key={c.slug} value={c.slug}>
-                    {c.title}
-                    {c.list_price != null
-                      ? ` · ${formatPrice(c.list_price, c.currency)}`
-                      : ""}
-                  </option>
-                ))
-              )}
-            </select>
+            <label className={labelClass}>
+              {isWorkshop ? "Workshop *" : "Select Course *"}
+            </label>
+            {isWorkshop ? (
+              <input
+                type="text"
+                readOnly
+                value={programTitle}
+                className={`${fieldClass} bg-slate-50 text-slate-700`}
+              />
+            ) : (
+              <select
+                required
+                value={formData.courseSlug}
+                onChange={(e) => update("courseSlug", e.target.value)}
+                className={`${fieldClass} text-slate-700`}
+                disabled={coursesLoading || courses.length === 0}
+              >
+                {coursesLoading ? (
+                  <option value="">Loading courses…</option>
+                ) : courses.length === 0 ? (
+                  <option value="">No courses available</option>
+                ) : (
+                  courses.map((c) => (
+                    <option key={c.slug} value={c.slug}>
+                      {c.title}
+                      {c.list_price != null
+                        ? ` · ${formatPrice(c.list_price, c.currency)}`
+                        : ""}
+                    </option>
+                  ))
+                )}
+              </select>
+            )}
           </div>
           <div>
             <label className={labelClass}>Date of Birth *</label>
@@ -535,10 +486,9 @@ function EnrollFormContent() {
               <input
                 type="file"
                 accept="image/*"
+                required
                 className="sr-only"
-                onChange={(e) =>
-                  setPhotoName(e.target.files?.[0]?.name || "")
-                }
+                onChange={(e) => void handlePhotoSelect(e.target.files?.[0])}
               />
             </label>
           </div>
@@ -583,7 +533,7 @@ function EnrollFormContent() {
                 accept=".pdf,image/*"
                 required
                 className="sr-only"
-                onChange={(e) => setDocName(e.target.files?.[0]?.name || "")}
+                onChange={(e) => void handleDocSelect(e.target.files?.[0])}
               />
             </label>
           </div>
@@ -770,11 +720,19 @@ function EnrollFormContent() {
 
       <button
         type="submit"
-        className="flex w-full items-center justify-center gap-2 rounded-xl bg-teal-600 px-8 py-3.5 text-sm font-bold text-white shadow-md transition-all hover:bg-teal-700 sm:w-auto"
+        disabled={submitting}
+        className="flex w-full items-center justify-center gap-2 rounded-xl bg-teal-600 px-8 py-3.5 text-sm font-bold text-white shadow-md transition-all hover:bg-teal-700 disabled:opacity-60 sm:w-auto"
       >
-        SUBMIT REGISTRATION
-        <MaterialIcon name="arrow_forward" size={16} />
+        {submitting
+          ? "SUBMITTING…"
+          : payableAmount > 0
+            ? `SUBMIT APPLICATION · ${formatINR(payableAmount)}`
+            : "SUBMIT APPLICATION"}
+        <MaterialIcon name="send" size={16} />
       </button>
+      {submitError ? (
+        <p className="mt-3 text-sm text-red-600">{submitError}</p>
+      ) : null}
     </form>
   );
 }
@@ -891,11 +849,11 @@ export default function EnrollPage() {
                     +91 98765 43210
                   </a>
                   <a
-                    href="mailto:support@skinfinity.edu"
+                    href="mailto:admissions@skinfinityacademy.com"
                     className="flex items-center gap-2.5 font-semibold text-slate-800 transition-colors hover:text-teal-700"
                   >
                     <MaterialIcon name="mail" size={16} className="text-teal-600" />
-                    support@skinfinity.edu
+                    admissions@skinfinityacademy.com
                   </a>
                 </div>
               </div>

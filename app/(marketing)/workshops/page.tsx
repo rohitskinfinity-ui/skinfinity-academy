@@ -5,60 +5,64 @@ import Link from "next/link";
 import PageHeader from "@/components/shared/PageHeader";
 import MaterialIcon from "@/components/shared/MaterialIcon";
 import {
-  fetchEvents,
+  fetchWorkshops,
   formatPrice,
   PLACEHOLDER_COURSE_IMAGE,
 } from "@/lib/api/public";
+import type { PublicWorkshop } from "@/lib/api/types";
 
-interface WorkshopItem {
-  id: string;
-  title: string;
-  date: string;
-  time: string;
-  speaker: string;
-  location: string;
-  image: string;
-  seats: number;
-  price: string;
-  type: string;
+function formatWorkshopDate(startsOn: string, endsOn: string | null) {
+  const start = new Date(`${startsOn}T00:00:00`);
+  const startLabel = start.toLocaleDateString("en-IN", {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+  });
+  if (!endsOn || endsOn === startsOn) return startLabel;
+  const end = new Date(`${endsOn}T00:00:00`);
+  return `${startLabel} – ${end.toLocaleDateString("en-IN", {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+  })}`;
+}
+
+function formatDeliveryMode(mode: string) {
+  const map: Record<string, string> = {
+    handson: "Hands-On",
+    observation: "Observation",
+    demonstration: "Demonstration",
+    training: "Clinical Training",
+    lecture: "Lecture",
+  };
+  return map[mode.toLowerCase()] || mode;
+}
+
+function stripHtml(value: string) {
+  return value
+    .replace(/<br\s*\/?>/gi, " ")
+    .replace(/<\/p>/gi, " ")
+    .replace(/<[^>]+>/g, "")
+    .replace(/&nbsp;/g, " ")
+    .replace(/&amp;/g, "&")
+    .replace(/&lt;/g, "<")
+    .replace(/&gt;/g, ">")
+    .replace(/&quot;/g, '"')
+    .replace(/\s+/g, " ")
+    .trim();
 }
 
 export default function WorkshopsPage() {
-  const [workshops, setWorkshops] = useState<WorkshopItem[]>([]);
+  const [workshops, setWorkshops] = useState<PublicWorkshop[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     let cancelled = false;
     (async () => {
       try {
-        const list = await fetchEvents({ type: "workshop", limit: 50 });
+        const list = await fetchWorkshops({ limit: 50 });
         if (cancelled) return;
-        setWorkshops(
-          list.items.map((e) => {
-            const start = new Date(e.starts_at);
-            return {
-              id: e.id,
-              title: e.title,
-              date: start.toLocaleDateString("en-IN", {
-                day: "numeric",
-                month: "short",
-                year: "numeric",
-              }),
-              time:
-                e.duration_label ||
-                start.toLocaleTimeString("en-IN", {
-                  hour: "numeric",
-                  minute: "2-digit",
-                }),
-              speaker: e.category_label || "Skinfinity Faculty",
-              location: e.venue || e.location || "Skinfinity Academy",
-              image: e.image_url || PLACEHOLDER_COURSE_IMAGE,
-              seats: e.seats_left ?? e.seats_total ?? 0,
-              price: formatPrice(e.price, e.currency || "INR"),
-              type: e.type,
-            };
-          }),
-        );
+        setWorkshops(list.items);
       } catch {
         if (!cancelled) setWorkshops([]);
       } finally {
@@ -101,73 +105,153 @@ export default function WorkshopsPage() {
               </div>
             </div>
           ) : (
-            <div className="grid sm:grid-cols-2 gap-6">
-              {workshops.map((w) => (
-                <div key={w.id} className="card-academy overflow-hidden group">
-                  <div className="relative h-52 overflow-hidden">
-                    <img
-                      src={w.image}
-                      alt={w.title}
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-slate-900/60 via-transparent to-transparent" />
-                    <span className="absolute top-3 left-3 glass rounded-xl px-2.5 py-1 text-[10px] font-bold text-teal-700 uppercase tracking-wider">
-                      {w.type}
-                    </span>
-                  </div>
-                  <div className="p-5 space-y-3">
-                    <h3
-                      className="font-bold text-slate-900 text-lg"
-                      style={{ fontFamily: "var(--font-heading), sans-serif" }}
-                    >
-                      {w.title}
-                    </h3>
-                    <div className="grid grid-cols-2 gap-2 text-xs text-slate-600">
-                      <span className="flex items-center gap-1.5">
-                        <MaterialIcon
-                          name="calendar_month"
-                          size={14}
-                          className="text-teal-500"
-                        />
-                        {w.date}
-                      </span>
-                      <span className="flex items-center gap-1.5">
-                        <MaterialIcon
-                          name="schedule"
-                          size={14}
-                          className="text-teal-500"
-                        />
-                        {w.time}
-                      </span>
-                      <span className="flex items-center gap-1.5">
-                        <MaterialIcon
-                          name="location_on"
-                          size={14}
-                          className="text-teal-500"
-                        />
-                        {w.location}
-                      </span>
-                      <span className="flex items-center gap-1.5">
-                        <MaterialIcon
-                          name="event_seat"
-                          size={14}
-                          className="text-teal-500"
-                        />
-                        {w.seats} seats
-                      </span>
+            <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-2">
+              {workshops.map((w) => {
+                const excerpt = w.tagline
+                  ? w.tagline
+                  : w.description
+                    ? stripHtml(w.description)
+                    : null;
+                const modes = w.delivery_modes ?? [];
+
+                return (
+                  <Link
+                    key={w.id}
+                    href={`/workshops/${w.slug}`}
+                    className="group relative flex flex-col overflow-hidden rounded-3xl border border-slate-200/80 bg-white transition-all duration-300 hover:border-teal-300 hover:shadow-xl"
+                  >
+                    {/* Banner Image with Badges */}
+                    <div className="relative aspect-[16/9] w-full overflow-hidden bg-slate-950 flex items-center justify-center">
+                      {/* Blurred backdrop image to fill container naturally */}
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
+                        src={w.image_url || PLACEHOLDER_COURSE_IMAGE}
+                        alt=""
+                        className="absolute inset-0 h-full w-full object-cover blur-xl opacity-40 scale-110 select-none"
+                      />
+                      {/* Foreground intact image displaying full resolution without cut off */}
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
+                        src={w.image_url || PLACEHOLDER_COURSE_IMAGE}
+                        alt={w.title}
+                        className="relative z-10 h-full w-full object-contain transition-transform duration-500 group-hover:scale-105"
+                      />
+                      <div className="absolute inset-0 z-10 bg-gradient-to-t from-slate-950/60 via-transparent to-transparent pointer-events-none" />
+
+                      {/* Top Badges */}
+                      <div className="absolute top-3 inset-x-3 z-20 flex items-center justify-between gap-2">
+                        {w.duration_label ? (
+                          <span className="rounded-xl border border-white/20 bg-teal-700/90 px-3 py-1 text-[11px] font-bold uppercase tracking-wider text-white shadow-md backdrop-blur-md">
+                            {w.duration_label}
+                          </span>
+                        ) : <span />}
+
+                        {w.locations && (
+                          <span className="flex items-center gap-1 rounded-xl border border-white/20 bg-slate-900/80 px-2.5 py-1 text-[11px] font-semibold text-white shadow-md backdrop-blur-md">
+                            <MaterialIcon name="location_on" size={13} className="text-teal-400" />
+                            {w.locations}
+                          </span>
+                        )}
+                      </div>
                     </div>
-                    <div className="flex items-center justify-between pt-3 border-t border-slate-100">
-                      <p className="text-lg font-bold text-slate-900">{w.price}</p>
-                      <Link
-                        href={`/enroll?program=${encodeURIComponent(w.title)}`}
-                        className="px-4 py-2.5 text-xs font-semibold text-white bg-teal-600 rounded-xl hover:bg-teal-700"
-                      >
-                        Enroll
-                      </Link>
+
+                    {/* Content Section */}
+                    <div className="flex flex-1 flex-col justify-between p-6 space-y-4">
+                      <div className="space-y-3">
+                        <h3
+                          className="text-xl font-bold leading-tight text-slate-900 transition-colors group-hover:text-teal-700 sm:text-2xl"
+                          style={{ fontFamily: "var(--font-heading), sans-serif" }}
+                        >
+                          {w.title}
+                        </h3>
+
+                        {/* Delivery Modes Pills */}
+                        {modes.length > 0 && (
+                          <div className="flex flex-wrap gap-1.5 pt-0.5">
+                            {modes.map((mode) => (
+                              <span
+                                key={mode}
+                                className="inline-flex items-center rounded-md border border-teal-200/80 bg-teal-50/80 px-2.5 py-0.5 text-[11px] font-semibold text-teal-700 shadow-2xs"
+                              >
+                                <span className="mr-1.5 size-1.5 rounded-full bg-teal-500" />
+                                {formatDeliveryMode(mode)}
+                              </span>
+                            ))}
+                          </div>
+                        )}
+
+                        {/* Short Excerpt */}
+                        {excerpt && (
+                          <p className="line-clamp-2 text-xs leading-relaxed text-slate-600">
+                            {excerpt}
+                          </p>
+                        )}
+                      </div>
+
+                      {/* Info Grid */}
+                      <div className="space-y-3 pt-2">
+                        <div className="grid grid-cols-2 gap-2.5 rounded-2xl border border-slate-100 bg-slate-50/80 p-3 text-xs text-slate-600">
+                          <span className="flex items-center gap-2">
+                            <MaterialIcon
+                              name="calendar_month"
+                              size={16}
+                              className="text-teal-600 shrink-0"
+                            />
+                            <span className="truncate font-medium">
+                              {formatWorkshopDate(w.starts_on, w.ends_on)}
+                            </span>
+                          </span>
+
+                          <span className="flex items-center gap-2">
+                            <MaterialIcon
+                              name="event_seat"
+                              size={16}
+                              className="text-teal-600 shrink-0"
+                            />
+                            <span className="truncate font-medium">
+                              {w.seats_left != null
+                                ? `${w.seats_left} seats left`
+                                : w.seats_total != null
+                                  ? `${w.seats_total} Total Seats`
+                                  : "Limited seats"}
+                            </span>
+                          </span>
+
+                          {w.contact_phone && (
+                            <span className="col-span-2 flex items-center gap-2 border-t border-slate-200/60 pt-2 text-slate-600">
+                              <MaterialIcon
+                                name="call"
+                                size={15}
+                                className="text-teal-600 shrink-0"
+                              />
+                              <span className="font-semibold text-slate-800">
+                                Contact: +91 {w.contact_phone}
+                              </span>
+                            </span>
+                          )}
+                        </div>
+
+                        {/* Footer Price & CTA */}
+                        <div className="flex items-center justify-between border-t border-slate-100 pt-3">
+                          <div>
+                            <span className="block text-[10px] font-bold uppercase tracking-wider text-slate-400">
+                              Fee
+                            </span>
+                            <span className="text-2xl font-extrabold text-slate-900">
+                              {formatPrice(w.price, w.currency || "INR")}
+                            </span>
+                          </div>
+
+                          <span className="inline-flex items-center gap-1.5 rounded-xl bg-teal-600 px-4 py-2.5 text-xs font-bold text-white shadow-sm transition-all group-hover:bg-teal-700 group-hover:shadow-md">
+                            View details
+                            <MaterialIcon name="arrow_forward" size={14} />
+                          </span>
+                        </div>
+                      </div>
                     </div>
-                  </div>
-                </div>
-              ))}
+                  </Link>
+                );
+              })}
             </div>
           )}
         </div>

@@ -9,6 +9,7 @@ import type {
   PublicEvent,
   PublicHomeReviewsResponse,
   PublicTestimonial,
+  PublicWorkshop,
   SubmitApplicationBody,
   SubmitContactBody,
 } from "./types";
@@ -75,6 +76,25 @@ export async function fetchCourses(params?: {
 export async function fetchCourseBySlug(slug: string) {
   return publicFetch<PublicCourseDetail>(
     `/courses/${encodeURIComponent(slug)}`,
+  );
+}
+
+export async function fetchWorkshops(params?: {
+  page?: number;
+  limit?: number;
+}) {
+  const sp = new URLSearchParams();
+  if (params?.page) sp.set("page", String(params.page));
+  if (params?.limit) sp.set("limit", String(params.limit));
+  const qs = sp.toString();
+  return publicFetch<Paginated<PublicWorkshop>>(
+    `/workshops${qs ? `?${qs}` : ""}`,
+  );
+}
+
+export async function fetchWorkshopBySlug(slug: string) {
+  return publicFetch<PublicWorkshop>(
+    `/workshops/${encodeURIComponent(slug)}`,
   );
 }
 
