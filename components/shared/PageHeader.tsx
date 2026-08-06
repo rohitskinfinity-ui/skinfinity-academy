@@ -111,7 +111,7 @@ export default function PageHeader({
         {subtitle && (
           <div className="relative max-w-3xl animate-in fade-in slide-in-from-bottom-3 duration-700">
             <div className="border-l-2 border-teal-500/70 pl-5 py-0.5">
-              <p className="text-slate-600 text-sm sm:text-base leading-relaxed">
+              <p className="text-slate-600 text-sm sm:text-base leading-relaxed line-clamp-2">
                 {subtitle}
               </p>
             </div>

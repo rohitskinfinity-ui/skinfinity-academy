@@ -19,13 +19,14 @@ export type PublicCategory = {
 };
 
 export type CourseMarketingContent = {
-  eligibility?: { intro?: string; items?: string[] };
-  highlights?: string[];
+  eligibility?: { intro?: string; items?: string | string[] };
+  highlights?: string | string[];
   training_structure?: {
+    html?: string;
     groups?: Array<{ title: string; items: string[] }>;
   };
-  why_choose?: { intro?: string; items?: string[] };
-  important_considerations?: string[];
+  why_choose?: { intro?: string; items?: string | string[] };
+  important_considerations?: string | string[];
 };
 
 export type PublicCourseCard = {
@@ -86,9 +87,20 @@ export type PublicCourseReview = {
   review_date?: string | null;
 };
 
+export type PublicCourseMedia = {
+  id: string;
+  kind: "image" | "video";
+  url: string;
+  thumbnail_url: string | null;
+  title: string | null;
+  caption: string | null;
+  sort_order: number;
+};
+
 export type PublicCourseDetail = PublicCourseCard & {
   faqs: PublicCourseFaq[];
   reviews?: PublicCourseReview[];
+  media?: PublicCourseMedia[];
   modules: PublicCourseModule[];
   seo_title?: string | null;
   seo_description?: string | null;

@@ -87,8 +87,41 @@ export default function Accordion({
                   {item.title}
                 </span>
                 {item.meta && (
-                  <span className="mt-0.5 block text-xs text-slate-400">
-                    {item.meta}
+                  <span className="mt-1 flex flex-wrap items-center gap-1.5">
+                    {typeof item.meta === "string" ? (
+                      item.meta.includes(" · ") || item.meta.includes(", ") ? (
+                        item.meta.split(/\s*·\s*|\s*,\s*/).map((m) => (
+                          <span
+                            key={m}
+                            className={cn(
+                              "inline-flex items-center rounded-md border px-2 py-0.5 text-[11px] font-semibold transition-colors",
+                              isOpen
+                                ? "border-teal-200 bg-teal-50 text-teal-800 shadow-xs"
+                                : "border-slate-200/80 bg-slate-100/80 text-teal-700 hover:border-teal-200 hover:bg-teal-50/50"
+                            )}
+                          >
+                            <span className="mr-1.5 size-1.5 rounded-full bg-teal-500" />
+                            {m}
+                          </span>
+                        ))
+                      ) : (
+                        <span
+                          className={cn(
+                            "inline-flex items-center rounded-md border px-2 py-0.5 text-[11px] font-semibold transition-colors",
+                            isOpen
+                              ? "border-teal-200 bg-teal-50 text-teal-800 shadow-xs"
+                              : "border-slate-200/80 bg-slate-100/80 text-teal-700 hover:border-teal-200 hover:bg-teal-50/50"
+                          )}
+                        >
+                          <span className="mr-1.5 size-1.5 rounded-full bg-teal-500" />
+                          {item.meta}
+                        </span>
+                      )
+                    ) : (
+                      <span className="text-xs font-semibold text-teal-700">
+                        {item.meta}
+                      </span>
+                    )}
                   </span>
                 )}
               </span>
