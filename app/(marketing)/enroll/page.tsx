@@ -11,6 +11,7 @@ import {
   fetchWorkshopBySlug,
   formatPrice,
   submitApplication,
+  uploadApplicationAttachments,
 } from "@/lib/api/public";
 import type { PublicCourseCard, PublicWorkshop } from "@/lib/api/types";
 
@@ -70,15 +71,6 @@ function parsePriceNumber(val: string | number | null | undefined): number {
   return isNaN(num) ? 0 : num;
 }
 
-function fileToBase64(file: File): Promise<string> {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.readAsDataURL(file);
-    reader.onload = () => resolve(reader.result as string);
-    reader.onerror = (err) => reject(err);
-  });
-}
-
 function EnrollFormContent() {
   const searchParams = useSearchParams();
   const initialProgram =
@@ -97,38 +89,28 @@ function EnrollFormContent() {
   const [registrationId, setRegistrationId] = useState<string | null>(null);
   const [acceptedTerms, setAcceptedTerms] = useState(false);
   const [photoName, setPhotoName] = useState("");
-  const [photoBase64, setPhotoBase64] = useState("");
+  const [photoFile, setPhotoFile] = useState<File | null>(null);
   const [docName, setDocName] = useState("");
-  const [docBase64, setDocBase64] = useState("");
+  const [docFile, setDocFile] = useState<File | null>(null);
 
-  const handlePhotoSelect = async (file: File | undefined) => {
+  const handlePhotoSelect = (file: File | undefined) => {
     if (!file) {
       setPhotoName("");
-      setPhotoBase64("");
+      setPhotoFile(null);
       return;
     }
     setPhotoName(file.name);
-    try {
-      const b64 = await fileToBase64(file);
-      setPhotoBase64(b64);
-    } catch {
-      setPhotoBase64("");
-    }
+    setPhotoFile(file);
   };
 
-  const handleDocSelect = async (file: File | undefined) => {
+  const handleDocSelect = (file: File | undefined) => {
     if (!file) {
       setDocName("");
-      setDocBase64("");
+      setDocFile(null);
       return;
     }
     setDocName(file.name);
-    try {
-      const b64 = await fileToBase64(file);
-      setDocBase64(b64);
-    } catch {
-      setDocBase64("");
-    }
+    setDocFile(file);
   };
 
   const [formData, setFormData] = useState({
@@ -289,11 +271,11 @@ function EnrollFormContent() {
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     if (!acceptedTerms) return;
-    if (!photoBase64) {
+    if (!photoFile) {
       setSubmitError("Please upload a photo.");
       return;
     }
-    if (!docBase64) {
+    if (!docFile) {
       setSubmitError("Please upload your qualification document.");
       return;
     }
@@ -301,6 +283,20 @@ function EnrollFormContent() {
     try {
       setSubmitting(true);
       setSubmitError(null);
+
+      const uploaded = await uploadApplicationAttachments({
+        photo: photoFile,
+        document: docFile,
+      });
+      if (!uploaded.photo_url) {
+        throw new Error("Photo upload failed. Please try again.");
+      }
+      if (!uploaded.document_url) {
+        throw new Error(
+          "Qualification document upload failed. Please try again.",
+        );
+      }
+
       const result = await submitApplication(
         isWorkshop
           ? {
@@ -327,9 +323,9 @@ function EnrollFormContent() {
               currency: programCurrency,
               accepted_terms: acceptedTerms,
               photo_name: photoName || null,
-              photo_base64: photoBase64 || null,
+              photo_url: uploaded.photo_url,
               doc_name: docName || null,
-              doc_base64: docBase64 || null,
+              document_url: uploaded.document_url,
               notes:
                 [
                   photoName ? `Photo: ${photoName}` : null,
@@ -361,9 +357,9 @@ function EnrollFormContent() {
               currency: programCurrency,
               accepted_terms: acceptedTerms,
               photo_name: photoName || null,
-              photo_base64: photoBase64 || null,
+              photo_url: uploaded.photo_url,
               doc_name: docName || null,
-              doc_base64: docBase64 || null,
+              document_url: uploaded.document_url,
               notes:
                 [
                   photoName ? `Photo: ${photoName}` : null,
@@ -488,7 +484,7 @@ function EnrollFormContent() {
                 accept="image/*"
                 required
                 className="sr-only"
-                onChange={(e) => void handlePhotoSelect(e.target.files?.[0])}
+                onChange={(e) => handlePhotoSelect(e.target.files?.[0])}
               />
             </label>
           </div>
@@ -533,7 +529,7 @@ function EnrollFormContent() {
                 accept=".pdf,image/*"
                 required
                 className="sr-only"
-                onChange={(e) => void handleDocSelect(e.target.files?.[0])}
+                onChange={(e) => handleDocSelect(e.target.files?.[0])}
               />
             </label>
           </div>

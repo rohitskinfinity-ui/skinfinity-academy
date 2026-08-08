@@ -8,9 +8,9 @@ import EmptyState from "@/app/(lms)/dashboard/_components/EmptyState";
 import QuizSkeleton from "@/components/lms/QuizSkeleton";
 import { useLMSTheme } from "@/components/lms/LMSThemeProvider";
 import {
-  fetchStudentQuiz,
-  submitStudentQuiz,
-  type StudentQuizPayload,
+  fetchStudentFinalQuiz,
+  submitStudentFinalQuiz,
+  type StudentFinalQuizPayload,
 } from "@/lib/api/student-client";
 import { ApiError } from "@/lib/api/client";
 
@@ -27,7 +27,7 @@ function asOptions(raw: unknown): string[] {
   return [];
 }
 
-export default function TheoryQuizPage() {
+export default function CertificateQuizPage() {
   const router = useRouter();
   const params = useParams();
   const { theme } = useLMSTheme();
@@ -39,14 +39,8 @@ export default function TheoryQuizPage() {
       : Array.isArray(params.id)
         ? params.id[0]
         : "";
-  const treatmentId =
-    typeof params.treatmentId === "string"
-      ? params.treatmentId
-      : Array.isArray(params.treatmentId)
-        ? params.treatmentId[0]
-        : "";
 
-  const [quiz, setQuiz] = useState<StudentQuizPayload | null>(null);
+  const [quiz, setQuiz] = useState<StudentFinalQuizPayload | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [answers, setAnswers] = useState<Record<string, number>>({});
@@ -57,17 +51,23 @@ export default function TheoryQuizPage() {
     percent: number;
     passed: boolean;
     pass_percent: number;
+    awaiting_admin: boolean;
   } | null>(null);
+
+  const courseHref = `/course/${encodeURIComponent(enrollmentId)}`;
+  const certsHref = "/dashboard/certificates";
 
   useEffect(() => {
     let cancelled = false;
     (async () => {
       try {
-        const data = await fetchStudentQuiz(enrollmentId, treatmentId);
+        const data = await fetchStudentFinalQuiz(enrollmentId);
         if (!cancelled) setQuiz(data);
       } catch (err) {
         if (!cancelled) {
-          setError(err instanceof ApiError ? err.message : "Failed to load quiz");
+          setError(
+            err instanceof ApiError ? err.message : "Failed to load certificate quiz",
+          );
         }
       } finally {
         if (!cancelled) setLoading(false);
@@ -76,12 +76,10 @@ export default function TheoryQuizPage() {
     return () => {
       cancelled = true;
     };
-  }, [enrollmentId, treatmentId]);
+  }, [enrollmentId]);
 
   const questions = quiz?.quiz.questions ?? [];
   const answeredCount = Object.keys(answers).length;
-  const courseHref = `/course/${encodeURIComponent(enrollmentId)}`;
-
   const allAnswered = useMemo(
     () => answeredCount >= questions.length && questions.length > 0,
     [answeredCount, questions.length],
@@ -90,8 +88,9 @@ export default function TheoryQuizPage() {
   async function handleSubmit() {
     if (!allAnswered || submitting) return;
     setSubmitting(true);
+    setError(null);
     try {
-      const res = await submitStudentQuiz(enrollmentId, treatmentId, answers);
+      const res = await submitStudentFinalQuiz(enrollmentId, answers);
       setResult(res);
     } catch (err) {
       setError(err instanceof ApiError ? err.message : "Submit failed");
@@ -107,8 +106,8 @@ export default function TheoryQuizPage() {
   if (error && !quiz) {
     return (
       <EmptyState
-        icon="error"
-        title="Quiz unavailable"
+        icon="quiz"
+        title="Certificate quiz unavailable"
         description={error}
         action={
           <Link href={courseHref} className="text-sm font-semibold text-teal-700">
@@ -154,6 +153,13 @@ export default function TheoryQuizPage() {
       </header>
 
       <main className="mx-auto max-w-2xl px-4 py-6 sm:px-6">
+        <p
+          className={`mb-4 text-sm ${isDark ? "text-slate-400" : "text-slate-600"}`}
+        >
+          This is the course certificate quiz. You need {quiz.quiz.pass_percent}%
+          to unlock download (after the academy issues your file).
+        </p>
+
         {quiz.already_passed && !result ? (
           <div
             className={`mb-4 rounded-xl border px-4 py-3 text-sm ${
@@ -179,18 +185,35 @@ export default function TheoryQuizPage() {
             }`}
           >
             <p className="text-lg font-bold">
-              {result.passed ? "Passed" : "Not passed yet"}
+              {result.passed ? "Certificate quiz passed" : "Not passed yet"}
             </p>
             <p className="mt-1 text-sm opacity-80">
               Score {result.score}/{result.max_score} ({result.percent}%). Pass
               mark {result.pass_percent}%.
             </p>
-            <Link
-              href={courseHref}
-              className="mt-4 inline-flex rounded-xl bg-teal-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-teal-500 transition-colors"
-            >
-              Continue learning
-            </Link>
+            {result.passed ? (
+              <p className="mt-2 text-sm opacity-80">
+                Download unlocks after the academy uploads your certificate.
+              </p>
+            ) : null}
+            <div className="mt-4 flex flex-wrap gap-2">
+              <Link
+                href={certsHref}
+                className="inline-flex rounded-xl bg-teal-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-teal-500 transition-colors"
+              >
+                My certificates
+              </Link>
+              <Link
+                href={courseHref}
+                className={`inline-flex rounded-xl border px-4 py-2 text-sm font-semibold ${
+                  isDark
+                    ? "border-slate-700 text-slate-200 hover:bg-slate-800"
+                    : "border-slate-200 text-slate-700 hover:bg-slate-50"
+                }`}
+              >
+                Back to course
+              </Link>
+            </div>
           </div>
         ) : null}
 
@@ -260,4 +283,3 @@ export default function TheoryQuizPage() {
     </div>
   );
 }
-

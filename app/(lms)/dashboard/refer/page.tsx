@@ -130,34 +130,34 @@ export default function ReferPage() {
           },
         ].map((s) => (
           <Card key={s.step}>
-            <div className="mb-3 flex h-8 w-8 items-center justify-center rounded-lg bg-teal-100 text-sm font-bold text-teal-700">
+            <div className="mb-3 flex h-8 w-8 items-center justify-center rounded-lg bg-teal-100 dark:bg-teal-950 text-sm font-bold text-teal-700 dark:text-teal-300">
               {s.step}
             </div>
-            <h4 className="mb-1 text-sm font-bold text-slate-800">{s.title}</h4>
-            <p className="text-xs leading-relaxed text-slate-500">{s.desc}</p>
+            <h4 className="mb-1 text-sm font-bold text-slate-800 dark:text-white">{s.title}</h4>
+            <p className="text-xs leading-relaxed text-slate-500 dark:text-slate-400">{s.desc}</p>
           </Card>
         ))}
       </div>
 
       <Card className="!p-0 overflow-hidden">
-        <div className="border-b border-slate-100 px-5 py-4">
-          <h3 className="text-sm font-bold text-slate-900">Your Referrals</h3>
+        <div className="border-b border-slate-100 dark:border-slate-800 px-5 py-4">
+          <h3 className="text-sm font-bold text-slate-900 dark:text-white">Your Referrals</h3>
         </div>
-        <div className="divide-y divide-slate-50">
+        <div className="divide-y divide-slate-50 dark:divide-slate-800/50">
           {referrals.map((r) => (
             <div
               key={r.name}
-              className="flex items-center justify-between gap-3 px-5 py-3.5 transition-colors hover:bg-slate-50/60"
+              className="flex items-center justify-between gap-3 px-5 py-3.5 transition-colors hover:bg-slate-50/60 dark:hover:bg-slate-800/40"
             >
               <div className="flex min-w-0 items-center gap-3">
-                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-teal-100 text-xs font-bold text-teal-700">
+                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-teal-100 dark:bg-teal-950 text-xs font-bold text-teal-700 dark:text-teal-300">
                   {r.avatar}
                 </div>
                 <div className="min-w-0">
-                  <p className="truncate text-sm font-semibold text-slate-800">
+                  <p className="truncate text-sm font-semibold text-slate-800 dark:text-white">
                     {r.name}
                   </p>
-                  <p className="text-xs text-slate-400">Invited {r.date}</p>
+                  <p className="text-xs text-slate-400 dark:text-slate-500">Invited {r.date}</p>
                 </div>
               </div>
               <div className="flex shrink-0 items-center gap-3">
@@ -165,7 +165,7 @@ export default function ReferPage() {
                   status={r.status === "Enrolled" ? "completed" : "pending"}
                   label={r.status}
                 />
-                <span className="w-14 text-right text-sm font-bold text-teal-600">
+                <span className="w-14 text-right text-sm font-bold text-teal-600 dark:text-teal-400">
                   {r.reward}
                 </span>
               </div>

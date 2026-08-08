@@ -103,7 +103,7 @@ export default function NotificationsPage() {
           unreadCount > 0 ? (
             <button
               onClick={markAllRead}
-              className="rounded-xl border border-slate-200 px-3.5 py-2 text-xs font-semibold text-slate-600 transition-colors hover:border-teal-200 hover:text-teal-700"
+              className="rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 px-3.5 py-2 text-xs font-semibold text-slate-600 dark:text-slate-300 transition-colors hover:border-teal-200 dark:hover:border-slate-600 hover:text-teal-700 dark:hover:text-white"
             >
               Mark all read
             </button>
@@ -117,7 +117,7 @@ export default function NotificationsPage() {
           if (groupItems.length === 0) return null;
           return (
             <div key={group}>
-              <h2 className="mb-2 text-xs font-bold uppercase tracking-wider text-slate-400">
+              <h2 className="mb-2 text-xs font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">
                 {group}
               </h2>
               <div className="space-y-2">
@@ -126,8 +126,10 @@ export default function NotificationsPage() {
                     key={n.id}
                     type="button"
                     onClick={() => markRead(n.id)}
-                    className={`flex w-full items-start gap-3.5 rounded-2xl border bg-white p-4 text-left shadow-[0_4px_20px_rgba(15,23,42,0.04)] transition-all hover:border-teal-100 ${
-                      n.unread ? "border-teal-100 bg-teal-50/20" : "border-slate-200/70"
+                    className={`flex w-full items-start gap-3.5 rounded-2xl border p-4 text-left shadow-[0_4px_20px_rgba(15,23,42,0.04)] dark:shadow-2xl transition-all hover:border-teal-100 dark:hover:border-slate-700 ${
+                      n.unread
+                        ? "border-teal-200 dark:border-teal-900/60 bg-teal-50/20 dark:bg-teal-950/30 text-slate-900 dark:text-white"
+                        : "border-slate-200/70 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-900 dark:text-white"
                     }`}
                   >
                     <div
@@ -137,15 +139,15 @@ export default function NotificationsPage() {
                     </div>
                     <div className="min-w-0 flex-1">
                       <div className="flex items-center gap-2">
-                        <p className="text-sm font-semibold text-slate-900">
+                        <p className="text-sm font-semibold text-slate-900 dark:text-white">
                           {n.title}
                         </p>
                         {n.unread && (
                           <span className="h-1.5 w-1.5 rounded-full bg-teal-500" />
                         )}
                       </div>
-                      <p className="mt-0.5 text-xs text-slate-500">{n.desc}</p>
-                      <p className="mt-1 text-[10px] text-slate-400">{n.time}</p>
+                      <p className="mt-0.5 text-xs text-slate-500 dark:text-slate-400">{n.desc}</p>
+                      <p className="mt-1 text-[10px] text-slate-400 dark:text-slate-500">{n.time}</p>
                     </div>
                   </button>
                 ))}

@@ -276,7 +276,7 @@ export type SubmitApplicationBody = {
   photo_url?: string | null;
   doc_name?: string | null;
   doc_base64?: string | null;
-  doc_url?: string | null;
+  document_url?: string | null;
   notes?: string | null;
 };
 

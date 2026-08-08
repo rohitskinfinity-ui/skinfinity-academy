@@ -1,57 +1,68 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import MaterialIcon from "@/components/shared/MaterialIcon";
 import SectionHeader from "../_components/SectionHeader";
 import EmptyState from "../_components/EmptyState";
+import BookmarksSkeleton from "../_components/BookmarksSkeleton";
+import {
+  deleteStudentBookmark,
+  fetchStudentBookmarks,
+  type StudentBookmark,
+} from "@/lib/api/student-client";
+import { ApiError } from "@/lib/api/client";
 
-const bookmarks = [
-  {
-    title: "Lip Augmentation Technique",
-    course: "Advanced Injectables & Fillers",
-    module: "Module 4",
-    time: "12:30",
-  },
-  {
-    title: "Vascular Occlusion Management",
-    course: "Advanced Injectables & Fillers",
-    module: "Module 2",
-    time: "08:15",
-  },
-  {
-    title: "Laser Safety Protocols",
-    course: "Laser & Energy Devices",
-    module: "Module 2",
-    time: "15:00",
-  },
-  {
-    title: "Deep Peel Application",
-    course: "Chemical Peels Mastery",
-    module: "Module 6",
-    time: "22:40",
-  },
-  {
-    title: "Hair Growth Cycles",
-    course: "Trichology & Hair Sciences",
-    module: "Module 1",
-    time: "05:20",
-  },
-  {
-    title: "Patient Consultation Framework",
-    course: "Facial Anatomy & Assessment",
-    module: "Module 3",
-    time: "10:00",
-  },
-];
+function formatTs(seconds: number | null) {
+  if (seconds == null) return "—";
+  const m = Math.floor(seconds / 60);
+  const s = seconds % 60;
+  return `${m}:${String(s).padStart(2, "0")}`;
+}
 
 export default function BookmarksPage() {
-  if (bookmarks.length === 0) {
-    return (
-      <div>
-        <SectionHeader
-          title="Bookmarks"
-          subtitle="Your saved lessons and timestamps for quick access."
-        />
+  const [items, setItems] = useState<StudentBookmark[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  async function load() {
+    setLoading(true);
+    setError(null);
+    try {
+      const res = await fetchStudentBookmarks();
+      setItems(res.items ?? []);
+    } catch (err) {
+      setError(err instanceof ApiError ? err.message : "Failed to load");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  useEffect(() => {
+    void load();
+  }, []);
+
+  async function remove(id: string) {
+    try {
+      await deleteStudentBookmark(id);
+      setItems((prev) => prev.filter((b) => b.id !== id));
+    } catch (err) {
+      setError(err instanceof ApiError ? err.message : "Delete failed");
+    }
+  }
+
+  return (
+    <div>
+      <SectionHeader
+        title="Bookmarks"
+        subtitle="Your saved lessons and timestamps for quick access."
+      />
+
+      {loading ? (
+        <BookmarksSkeleton />
+      ) : error ? (
+        <EmptyState icon="error" title="Couldn’t load bookmarks" description={error} />
+      ) : items.length === 0 ? (
         <EmptyState
           icon="bookmark"
           title="No bookmarks yet"
@@ -65,45 +76,44 @@ export default function BookmarksPage() {
             </Link>
           }
         />
-      </div>
-    );
-  }
-
-  return (
-    <div>
-      <SectionHeader
-        title="Bookmarks"
-        subtitle="Your saved lessons and timestamps for quick access."
-      />
-      <div className="grid gap-3 sm:grid-cols-2">
-        {bookmarks.map((b) => (
-          <Link
-            key={b.title}
-            href={`/course/${encodeURIComponent(b.course)}`}
-            className="group flex items-center gap-3.5 rounded-2xl border border-slate-200/70 bg-white p-4 shadow-[0_4px_20px_rgba(15,23,42,0.04)] transition-all hover:-translate-y-0.5 hover:border-teal-100 hover:shadow-[0_12px_32px_rgba(15,118,110,0.08)]"
-          >
-            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-teal-50 text-teal-600">
-              <MaterialIcon name="play_circle" size={22} />
-            </div>
-            <div className="min-w-0 flex-1">
-              <p className="truncate text-sm font-semibold text-slate-900 transition-colors group-hover:text-teal-700">
-                {b.title}
+      ) : (
+        <div className="grid gap-3 sm:grid-cols-2">
+          {items.map((b) => (
+            <div
+              key={b.id}
+              className="flex flex-col rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-900 dark:text-white p-4 shadow-[0_4px_20px_rgba(15,23,42,0.04)] dark:shadow-2xl transition-colors duration-300"
+            >
+              <div className="mb-3 flex items-start justify-between gap-2">
+                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-teal-50 dark:bg-teal-950/60 text-teal-700 dark:text-teal-400">
+                  <MaterialIcon name="bookmark" size={18} />
+                </div>
+                <button
+                  type="button"
+                  onClick={() => void remove(b.id)}
+                  className="text-xs font-semibold text-slate-400 dark:text-slate-500 hover:text-red-600 dark:hover:text-red-400"
+                >
+                  Remove
+                </button>
+              </div>
+              <h3 className="font-bold text-slate-900 dark:text-white">{b.title}</h3>
+              <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
+                {b.treatment_name || "Treatment"}
+                {b.module_label ? ` · ${b.module_label}` : ""}
+                {" · "}
+                {formatTs(b.timestamp_seconds)}
               </p>
-              <p className="text-xs text-slate-400">
-                {b.course} · {b.module}
-              </p>
+              {b.enrollment_id ? (
+                <Link
+                  href={`/course/${b.enrollment_id}`}
+                  className="mt-3 inline-flex items-center gap-1 text-xs font-semibold text-teal-700 dark:text-teal-400 hover:text-teal-800 dark:hover:text-teal-300"
+                >
+                  Open course <MaterialIcon name="arrow_forward" size={14} />
+                </Link>
+              ) : null}
             </div>
-            <div className="flex items-center gap-1.5 rounded-lg bg-slate-50 px-2.5 py-1.5 text-xs text-slate-400">
-              <MaterialIcon name="schedule" size={12} /> {b.time}
-            </div>
-            <MaterialIcon
-              name="bookmark"
-              size={18}
-              className="shrink-0 text-teal-500"
-            />
-          </Link>
-        ))}
-      </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }

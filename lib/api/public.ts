@@ -1,5 +1,7 @@
-import { publicFetch } from "./client";
+import { ApiError, getApiBaseUrl, publicFetch } from "./client";
 import type {
+  ApiFailure,
+  ApiSuccess,
   Paginated,
   PublicBlogPost,
   PublicCalendarCourse,
@@ -257,6 +259,46 @@ export async function submitApplication(body: SubmitApplicationBody) {
     method: "POST",
     body: JSON.stringify(body),
   });
+}
+
+/** Upload enroll photo / qualification document via multipart (avoids large base64 JSON). */
+export async function uploadApplicationAttachments(files: {
+  photo?: File | null;
+  document?: File | null;
+}) {
+  const form = new FormData();
+  if (files.photo) form.append("photo", files.photo, files.photo.name);
+  if (files.document) {
+    form.append("document", files.document, files.document.name);
+  }
+
+  const url = `${getApiBaseUrl()}/api/public/applications/attachments`;
+  const res = await fetch(url, {
+    method: "POST",
+    body: form,
+    cache: "no-store",
+  });
+
+  let payload: ApiSuccess<{
+    registration_id: string;
+    photo_url: string | null;
+    document_url: string | null;
+  }> | ApiFailure | null = null;
+  try {
+    payload = await res.json();
+  } catch {
+    throw new ApiError("Invalid API response", res.status);
+  }
+
+  if (!res.ok || !payload || payload.success === false) {
+    throw new ApiError(
+      payload && "message" in payload ? payload.message : "Upload failed",
+      res.status,
+      payload && "errors" in payload ? payload.errors : undefined,
+    );
+  }
+
+  return payload.data;
 }
 
 export async function submitContact(body: SubmitContactBody) {

@@ -70,18 +70,18 @@ export default function PaymentsPage() {
       </div>
 
       <Card>
-        <h3 className="mb-4 font-bold text-slate-900">Transaction History</h3>
+        <h3 className="mb-4 font-bold text-slate-900 dark:text-white">Transaction History</h3>
         <div className="space-y-1">
           {transactions.map((t) => (
             <div
               key={t.id}
-              className="flex items-center gap-3 rounded-xl p-3 transition-colors hover:bg-slate-50 sm:gap-4"
+              className="flex items-center gap-3 rounded-xl p-3 transition-colors hover:bg-slate-50 dark:hover:bg-slate-800/60 sm:gap-4"
             >
               <div
                 className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ${
                   t.status === "paid"
-                    ? "bg-emerald-50 text-emerald-500"
-                    : "bg-amber-50 text-amber-500"
+                    ? "bg-emerald-50 dark:bg-emerald-950/60 text-emerald-500 dark:text-emerald-400"
+                    : "bg-amber-50 dark:bg-amber-950/60 text-amber-500 dark:text-amber-400"
                 }`}
               >
                 <MaterialIcon
@@ -90,15 +90,15 @@ export default function PaymentsPage() {
                 />
               </div>
               <div className="min-w-0 flex-1">
-                <p className="truncate text-sm font-semibold text-slate-900">
+                <p className="truncate text-sm font-semibold text-slate-900 dark:text-white">
                   {t.course}
                 </p>
-                <p className="text-xs text-slate-400">
+                <p className="text-xs text-slate-400 dark:text-slate-500">
                   {t.id} · {t.date} · {t.method}
                 </p>
               </div>
               <div className="text-right">
-                <p className="text-sm font-bold text-slate-900">
+                <p className="text-sm font-bold text-slate-900 dark:text-white">
                   ₹{t.amount.toLocaleString()}
                 </p>
                 <StatusBadge
@@ -107,7 +107,7 @@ export default function PaymentsPage() {
                 />
               </div>
               <button
-                className="hidden rounded-lg p-2 text-slate-400 hover:bg-slate-100 sm:block"
+                className="hidden rounded-lg p-2 text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 sm:block"
                 aria-label="Download receipt"
               >
                 <MaterialIcon name="download" size={16} />
