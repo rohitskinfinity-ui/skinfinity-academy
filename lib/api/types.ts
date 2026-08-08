@@ -268,6 +268,8 @@ export type SubmitApplicationBody = {
   city_state?: string | null;
   pin_code?: string | null;
   source?: string | null;
+  referral_code?: string | null;
+  use_referral_credit?: boolean;
   quoted_price?: number | null;
   currency?: string;
   accepted_terms: boolean;

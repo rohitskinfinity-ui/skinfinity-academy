@@ -247,6 +247,26 @@ export async function fetchHomeReviews(params?: { limit?: number }) {
   );
 }
 
+export type PublicReferralValidation = {
+  valid: boolean;
+  code: string;
+  referrer_first_name: string;
+  friend_discount: number;
+  reward_amount: number;
+  currency: string;
+};
+
+export async function validateReferralCode(
+  code: string,
+  opts?: { email?: string | null },
+) {
+  const sp = new URLSearchParams({ code: code.trim() });
+  if (opts?.email?.trim()) sp.set("email", opts.email.trim());
+  return publicFetch<PublicReferralValidation>(
+    `/referrals/validate?${sp.toString()}`,
+  );
+}
+
 export async function submitApplication(body: SubmitApplicationBody) {
   return publicFetch<{
     id: string;

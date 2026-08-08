@@ -18,6 +18,22 @@ export type StudentProfile = {
   role: string;
   is_active: boolean;
   last_login_at: string | null;
+  phone?: string | null;
+  whatsapp?: string | null;
+  alternate_phone?: string | null;
+  location?: string | null;
+  address_line?: string | null;
+  city_state?: string | null;
+  pin_code?: string | null;
+  date_of_birth?: string | null;
+  gender?: string | null;
+  program_label?: string | null;
+  highest_qualification?: string | null;
+  profession?: string | null;
+  medical_background?: string | null;
+  registration_no?: string | null;
+  currently_working?: string | null;
+  guardian_name?: string | null;
   enrollments: StudentEnrollmentSummary[];
 };
 
@@ -495,8 +511,25 @@ export async function deleteStudentBookmark(id: string) {
 }
 
 export async function patchStudentProfile(body: {
+  full_name?: string;
   display_name?: string | null;
   avatar_url?: string | null;
+  phone?: string | null;
+  whatsapp?: string | null;
+  alternate_phone?: string | null;
+  location?: string | null;
+  address_line?: string | null;
+  city_state?: string | null;
+  pin_code?: string | null;
+  date_of_birth?: string | null;
+  gender?: string | null;
+  guardian_name?: string | null;
+  highest_qualification?: string | null;
+  profession?: string | null;
+  medical_background?: string | null;
+  currently_working?: string | null;
+  registration_no?: string | null;
+  program_label?: string | null;
 }) {
   return studentFetch<StudentProfile>(
     "/profile",
@@ -562,4 +595,78 @@ export async function downloadStudentCertificate(enrollmentId: string) {
     filename: string;
     certificate_code: string;
   }>(`/certificates/${enrollmentId}/download`, { method: "POST" }, "student");
+}
+
+export type StudentReferralItem = {
+  id: string;
+  invitee_name: string | null;
+  invitee_email: string | null;
+  status: "pending" | "enrolled" | "rewarded" | "expired" | string;
+  reward_amount: number | null;
+  currency: string;
+  avatar_url: string | null;
+  enrolled_at: string | null;
+  created_at: string;
+};
+
+export type StudentReferralWallet = {
+  available: number;
+  earned: number;
+  redeemed: number;
+  currency: string;
+};
+
+export type StudentReferralDashboard = {
+  code: string;
+  link: string;
+  reward_amount: number;
+  friend_discount: number;
+  currency: string;
+  wallet?: StudentReferralWallet;
+  available_balance?: number;
+  referrals: StudentReferralItem[];
+};
+
+export async function fetchStudentReferrals() {
+  return studentFetch<StudentReferralDashboard>(
+    "/referrals",
+    undefined,
+    "student",
+  );
+}
+
+export async function fetchStudentWallet() {
+  return studentFetch<StudentReferralWallet>("/wallet", undefined, "student");
+}
+
+export type StudentPaymentItem = {
+  id: string;
+  txn_code: string;
+  course: string;
+  amount: number;
+  currency: string;
+  method: string;
+  status: string;
+  payment_option?: string | null;
+  description?: string | null;
+  paid_at: string | null;
+  created_at: string;
+};
+
+export type StudentPaymentsPayload = {
+  summary: {
+    total_spent: number;
+    pending: number;
+    courses_purchased: number;
+    currency: string;
+  };
+  items: StudentPaymentItem[];
+};
+
+export async function fetchStudentPayments() {
+  return studentFetch<StudentPaymentsPayload>(
+    "/payments",
+    undefined,
+    "student",
+  );
 }

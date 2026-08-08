@@ -6,6 +6,8 @@ import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
 import MaterialIcon from "@/components/shared/MaterialIcon";
 import { useStudentAuth } from "@/store/student-auth";
+import { fetchStudentWallet } from "@/lib/api/student-client";
+import { formatInrAmount } from "@/lib/referrals";
 
 import { LMSThemeProvider } from "@/components/lms/LMSThemeProvider";
 import { LMSThemeToggle } from "@/components/lms/LMSThemeToggle";
@@ -73,6 +75,8 @@ function NavLink({
 export default function LMSLayout({ children }: { children: React.ReactNode }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [search, setSearch] = useState("");
+  const [walletBalance, setWalletBalance] = useState<number | null>(null);
+  const [walletCurrency, setWalletCurrency] = useState("INR");
   const pathname = usePathname();
   const router = useRouter();
   const { token, student, hydrated, loading, logout } = useStudentAuth();
@@ -85,6 +89,27 @@ export default function LMSLayout({ children }: { children: React.ReactNode }) {
       router.replace("/login");
     }
   }, [hydrated, token, student, router]);
+
+  useEffect(() => {
+    if (!token || !student) {
+      setWalletBalance(null);
+      return;
+    }
+    let cancelled = false;
+    void (async () => {
+      try {
+        const wallet = await fetchStudentWallet();
+        if (cancelled) return;
+        setWalletBalance(Number(wallet.available) || 0);
+        setWalletCurrency(wallet.currency || "INR");
+      } catch {
+        if (!cancelled) setWalletBalance(null);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [token, student, pathname]);
 
   const displayName = student?.display_name || student?.full_name || "Student";
   const initials = useMemo(() => initialsFromName(displayName), [displayName]);
@@ -236,6 +261,17 @@ export default function LMSLayout({ children }: { children: React.ReactNode }) {
               <div className="flex shrink-0 items-center gap-2 sm:gap-3">
                 {/* Theme Toggle */}
                 <LMSThemeToggle />
+
+                {walletBalance != null && walletBalance > 0 ? (
+                  <Link
+                    href="/dashboard/refer"
+                    className="inline-flex items-center gap-1.5 rounded-full border border-teal-200 bg-teal-50 px-2.5 py-1.5 text-[11px] font-bold text-teal-800 transition-colors hover:bg-teal-100 dark:border-teal-800 dark:bg-teal-950/50 dark:text-teal-200 dark:hover:bg-teal-900/60 sm:px-3"
+                    title="Referral wallet"
+                  >
+                    <MaterialIcon name="account_balance_wallet" size={14} />
+                    {formatInrAmount(walletBalance, walletCurrency)}
+                  </Link>
+                ) : null}
 
                 <Link
                   href="/dashboard/live"

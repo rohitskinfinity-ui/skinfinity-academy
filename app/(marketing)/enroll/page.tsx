@@ -12,8 +12,18 @@ import {
   formatPrice,
   submitApplication,
   uploadApplicationAttachments,
+  validateReferralCode,
+  type PublicReferralValidation,
 } from "@/lib/api/public";
 import type { PublicCourseCard, PublicWorkshop } from "@/lib/api/types";
+import {
+  clearStoredReferralCode,
+  formatInrAmount,
+  normalizeReferralCode,
+} from "@/lib/referrals";
+import { ApiError } from "@/lib/api/client";
+import { fetchStudentWallet } from "@/lib/api/student-client";
+import { useStudentAuth } from "@/store/student-auth";
 
 const fieldClass =
   "w-full px-4 py-3 bg-white border border-slate-300 rounded-xl text-sm shadow-sm focus:outline-none focus:border-teal-500 focus:ring-1 focus:ring-teal-500";
@@ -76,7 +86,10 @@ function EnrollFormContent() {
   const initialProgram =
     searchParams.get("program") || searchParams.get("title") || "";
   const workshopSlug = searchParams.get("workshop")?.trim() || "";
+  const refParam = searchParams.get("ref")?.trim() || "";
+  const creditParam = searchParams.get("credit")?.trim() === "1";
   const isWorkshop = Boolean(workshopSlug);
+  const { token, student } = useStudentAuth();
 
   const [courses, setCourses] = useState<PublicCourseCard[]>([]);
   const [coursesLoading, setCoursesLoading] = useState(!isWorkshop);
@@ -112,6 +125,17 @@ function EnrollFormContent() {
     setDocName(file.name);
     setDocFile(file);
   };
+
+  const [walletAvailable, setWalletAvailable] = useState(0);
+  const [walletCurrency, setWalletCurrency] = useState("INR");
+  const [useReferralCredit, setUseReferralCredit] = useState(creditParam);
+  const [referralCode, setReferralCode] = useState("");
+  const [referralOffer, setReferralOffer] =
+    useState<PublicReferralValidation | null>(null);
+  const [referralStatus, setReferralStatus] = useState<
+    "idle" | "checking" | "valid" | "invalid"
+  >("idle");
+  const [referralMessage, setReferralMessage] = useState<string | null>(null);
 
   const [formData, setFormData] = useState({
     fullName: "",
@@ -183,6 +207,98 @@ function EnrollFormContent() {
   }, [isWorkshop, workshopSlug]);
 
   useEffect(() => {
+    clearStoredReferralCode();
+  }, []);
+
+  useEffect(() => {
+    if (!token) {
+      setWalletAvailable(0);
+      return;
+    }
+    let cancelled = false;
+    void (async () => {
+      try {
+        const wallet = await fetchStudentWallet();
+        if (cancelled) return;
+        const available = Number(wallet.available) || 0;
+        setWalletAvailable(available);
+        setWalletCurrency(wallet.currency || "INR");
+        if (creditParam && available > 0) setUseReferralCredit(true);
+      } catch {
+        if (!cancelled) setWalletAvailable(0);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [token, creditParam]);
+
+  useEffect(() => {
+    if (!student?.email) return;
+    setFormData((prev) => ({
+      ...prev,
+      email: prev.email || student.email,
+      fullName: prev.fullName || student.full_name || "",
+    }));
+  }, [student]);
+
+  useEffect(() => {
+    const incoming = normalizeReferralCode(refParam);
+    if (incoming) setReferralCode(incoming);
+  }, [refParam]);
+
+  useEffect(() => {
+    const code = normalizeReferralCode(referralCode);
+    if (!code) {
+      setReferralOffer(null);
+      setReferralStatus("idle");
+      setReferralMessage(null);
+      return;
+    }
+
+    let cancelled = false;
+    setReferralStatus("checking");
+    const timer = window.setTimeout(() => {
+      void (async () => {
+        try {
+          const offer = await validateReferralCode(code, {
+            email: formData.email,
+          });
+          if (cancelled) return;
+          setReferralOffer(offer);
+          setReferralStatus("valid");
+          setReferralMessage(
+            `Referral code ${offer.code} from ${offer.referrer_first_name} applied — ${formatInrAmount(
+              offer.friend_discount,
+              offer.currency,
+            )} off.`,
+          );
+          setFormData((prev) => ({
+            ...prev,
+            source: prev.source || "Referral",
+          }));
+        } catch (err) {
+          if (cancelled) return;
+          setReferralOffer(null);
+          setReferralStatus("invalid");
+          setReferralMessage(
+            err instanceof ApiError
+              ? err.message
+              : err instanceof Error
+                ? err.message
+                : "Invalid referral code",
+          );
+        }
+      })();
+    }, 400);
+
+    return () => {
+      cancelled = true;
+      window.clearTimeout(timer);
+    };
+  }, [referralCode, formData.email]);
+
+  useEffect(() => {
     if (isWorkshop || courses.length === 0) return;
     const matched = courses.find((c) => {
       if (initialProgram) {
@@ -202,9 +318,14 @@ function EnrollFormContent() {
 
   const selectedCourse = courses.find((c) => c.slug === formData.courseSlug);
 
-  const payableAmount = isWorkshop
+  const listAmount = isWorkshop
     ? parsePriceNumber(workshop?.price)
     : parsePriceNumber(selectedCourse?.list_price);
+
+  const displayPayable =
+    referralOffer && listAmount > 0
+      ? Math.max(0, listAmount - Number(referralOffer.friend_discount || 0))
+      : listAmount;
 
   const programTitle = isWorkshop
     ? workshop?.title || "Hands-On Workshop"
@@ -279,6 +400,13 @@ function EnrollFormContent() {
       setSubmitError("Please upload your qualification document.");
       return;
     }
+    if (normalizeReferralCode(referralCode) && !referralOffer) {
+      setSubmitError(
+        referralMessage ||
+          "Enter a valid referral code, or leave the coupon field blank.",
+      );
+      return;
+    }
 
     try {
       setSubmitting(true);
@@ -319,7 +447,9 @@ function EnrollFormContent() {
               city_state: formData.cityState || null,
               pin_code: formData.pinCode || null,
               source: formData.source || null,
-              quoted_price: payableAmount > 0 ? payableAmount : null,
+              referral_code: referralOffer?.code || null,
+              use_referral_credit: useReferralCredit && walletAvailable > 0,
+              quoted_price: listAmount > 0 ? listAmount : null,
               currency: programCurrency,
               accepted_terms: acceptedTerms,
               photo_name: photoName || null,
@@ -353,7 +483,9 @@ function EnrollFormContent() {
               city_state: formData.cityState || null,
               pin_code: formData.pinCode || null,
               source: formData.source || null,
-              quoted_price: payableAmount > 0 ? payableAmount : null,
+              referral_code: referralOffer?.code || null,
+              use_referral_credit: useReferralCredit && walletAvailable > 0,
+              quoted_price: listAmount > 0 ? listAmount : null,
               currency: programCurrency,
               accepted_terms: acceptedTerms,
               photo_name: photoName || null,
@@ -656,6 +788,56 @@ function EnrollFormContent() {
       {/* 5. How Did You Find Us */}
       <div className="space-y-4">
         <SectionTitle n={5} title="How Did You Find Us?" />
+        <div>
+          <label className={labelClass}>Referral / coupon code</label>
+          <input
+            type="text"
+            value={referralCode}
+            autoComplete="off"
+            spellCheck={false}
+            placeholder="Optional, e.g. AMAN7K"
+            onChange={(e) =>
+              setReferralCode(normalizeReferralCode(e.target.value))
+            }
+            className={`${fieldClass} uppercase tracking-wide ${
+              referralStatus === "invalid"
+                ? "border-red-400 focus:border-red-500 focus:ring-red-500"
+                : referralStatus === "valid"
+                  ? "border-teal-500 focus:border-teal-500"
+                  : ""
+            }`}
+          />
+          {referralStatus === "checking" ? (
+            <p className="mt-1.5 text-xs text-slate-500">Checking coupon…</p>
+          ) : null}
+          {referralStatus === "valid" && referralMessage ? (
+            <div className="mt-2 rounded-xl border border-teal-200 bg-teal-50 px-4 py-3 text-sm text-teal-800">
+              {referralMessage}
+            </div>
+          ) : null}
+          {referralStatus === "invalid" && referralMessage ? (
+            <p className="mt-1.5 text-xs font-medium text-red-600">
+              {referralMessage}
+            </p>
+          ) : null}
+        </div>
+        {walletAvailable > 0 ? (
+          <label className="flex cursor-pointer items-start gap-3 rounded-xl border border-teal-200 bg-teal-50 px-4 py-3 text-sm text-teal-900">
+            <input
+              type="checkbox"
+              checked={useReferralCredit}
+              onChange={(e) => setUseReferralCredit(e.target.checked)}
+              className="mt-0.5 size-4 rounded border-slate-300 text-teal-600 focus:ring-teal-500"
+            />
+            <span>
+              Apply referral wallet{" "}
+              <strong>
+                {formatInrAmount(walletAvailable, walletCurrency)}
+              </strong>{" "}
+              to this enrollment. Admissions will deduct it from the course fee.
+            </span>
+          </label>
+        ) : null}
         <div className="flex flex-wrap gap-2">
           {SOURCES.map((source) => (
             <label
@@ -721,8 +903,8 @@ function EnrollFormContent() {
       >
         {submitting
           ? "SUBMITTING…"
-          : payableAmount > 0
-            ? `SUBMIT APPLICATION · ${formatINR(payableAmount)}`
+          : displayPayable > 0
+            ? `SUBMIT APPLICATION · ${formatINR(displayPayable)}`
             : "SUBMIT APPLICATION"}
         <MaterialIcon name="send" size={16} />
       </button>
